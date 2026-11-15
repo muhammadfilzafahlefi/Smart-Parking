@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login & Registrasi Pengguna – Smart Parking System</title>
+  
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%230F382C'><rect width='24' height='24' rx='6' fill='%230F382C'/><text x='50%25' y='68%25' font-size='14' font-weight='bold' fill='white' text-anchor='middle'>P</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            forest: { DEFAULT: '#0F382C', hover: '#164E3F', dark: '#0B2820', light: '#E8F2EE' },
+            cream: { DEFAULT: '#FAF8F5', alt: '#F4F2EB' },
+            sand: { DEFAULT: '#E6E3D8', border: '#D5D2C7' }
+          },
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-[#FAF8F5] text-[#192A24] min-h-screen flex flex-col justify-between antialiased selection:bg-[#0F382C] selection:text-white">
+
+  <!-- Header -->
+  <header class="p-6 flex items-center justify-between border-b border-[#E6E3D8] max-w-7xl mx-auto w-full bg-white/70 backdrop-blur-md">
+    <a href="index.html" class="flex items-center gap-3 group">
+      <div class="w-10 h-10 rounded-xl bg-[#0F382C] text-white flex items-center justify-center font-bold group-hover:scale-105 transition-transform shadow-sm">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+      </div>
+      <div>
+        <span class="font-serif tracking-wider font-bold text-lg text-[#0F382C] block leading-none">SMART PARKING</span>
+        <span class="text-[10px] text-[#5C6F67] tracking-widest font-mono uppercase mt-0.5 block">PORTAL PENGGUNA PARKIR</span>
+      </div>
+    </a>
+
+    <div class="flex items-center gap-3">
+      <a href="index.html" class="text-xs font-semibold text-[#5C6F67] hover:text-[#0F382C] flex items-center gap-1.5 transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+        <span>Ke Halaman Utama</span>
+      </a>
+      <a href="login-admin.html" class="text-xs font-semibold text-[#0F382C] hover:bg-[#F4F2EB] border border-[#D5D2C7] px-3.5 py-1.5 rounded-lg transition-colors">
+        Portal Admin &rarr;
+      </a>
+    </div>
+  </header>
+
+  <!-- Login/Register Main Box -->
+  <main class="flex-1 flex items-center justify-center p-4 sm:p-6 my-8">
+    <div class="w-full max-w-md bg-white border border-[#E6E3D8] rounded-3xl p-8 sm:p-10 shadow-xl relative overflow-hidden">
+      
+      <!-- Tab Switcher (Masuk / Daftar) -->
+      <div class="flex items-center p-1 bg-[#FAF8F5] border border-[#E6E3D8] rounded-2xl mb-8">
+        <button type="button" id="tab-btn-login" onclick="switchAuthTab('login')" class="flex-1 py-2 rounded-xl text-xs font-bold transition-all bg-[#0F382C] text-white shadow-sm">
+          Masuk ke Akun
+        </button>
+        <button type="button" id="tab-btn-register" onclick="switchAuthTab('register')" class="flex-1 py-2 rounded-xl text-xs font-bold transition-all text-[#5C6F67] hover:text-[#192A24]">
+          Daftar Baru
+        </button>
+      </div>
+
+      <!-- Alert Box -->
+      <div id="auth-alert" class="hidden mb-6 p-3.5 rounded-xl text-xs flex items-center gap-2">
+        <span id="auth-alert-msg"></span>
+      </div>
+
+      <!-- ================= LOGIN TAB ================= -->
+      <div id="auth-view-login">
+        <div class="mb-6">
+          <h1 class="text-xl font-bold tracking-tight text-[#192A24]">Selamat Datang Pengguna</h1>
+          <p class="text-xs text-[#5C6F67] mt-1">
+            Masuk untuk reservasi slot parkir, upload bukti pembayaran, dan konfirmasi kedatangan mobil Anda.
+          </p>
+        </div>
+
+        <form onsubmit="handleUserLogin(event)" class="space-y-4 text-xs">
+          <div>
+            <label class="block font-semibold text-[#192A24] mb-1">Alamat Email</label>
+            <input type="email" id="user-login-email" required placeholder="nama@email.com" class="w-full px-3.5 py-2.5 rounded-xl border border-[#D5D2C7] bg-[#FAF8F5] focus:bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#0F382C]">
+          </div>
+
+          <div>
+            <label class="block font-semibold text-[#192A24] mb-1">Kata Sandi (Password)</label>
+            <input type="password" id="user-login-pass" required placeholder="••••••••" class="w-full px-3.5 py-2.5 rounded-xl border border-[#D5D2C7] bg-[#FAF8F5] focus:bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#0F382C]">
+          </div>
+          <p class="text-[11px] text-[#5C6F67]">Akun demo lokal: user@smartparking.com / user123. Anda juga dapat mendaftar akun baru.</p>
+
+          <div class="pt-2">
+            <button type="submit" class="w-full py-3 rounded-xl bg-[#0F382C] hover:bg-[#164E3F] text-white font-bold text-sm tracking-wide transition-all shadow-md flex items-center justify-center gap-2">
+              <span>Masuk ke Dashboard Pengguna</span>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- ================= REGISTER TAB ================= -->
+      <div id="auth-view-register" class="hidden">
+        <div class="mb-6">
+          <h1 class="text-xl font-bold tracking-tight text-[#192A24]">Registrasi Akun Baru</h1>
+          <p class="text-xs text-[#5C6F67] mt-1">
+            Daftarkan diri Anda untuk kemudahan booking parkir mobil real-time.
+          </p>
+        </div>
+
+        <form onsubmit="handleUserRegister(event)" class="space-y-3.5 text-xs">
+          <div>
+            <label class="block font-semibold text-[#192A24] mb-1">Nama Lengkap</label>
+            <input type="text" id="reg-name" required placeholder="Contoh: Muhammad Farhan" class="w-full px-3.5 py-2.5 rounded-xl border border-[#D5D2C7] bg-[#FAF8F5] text-sm focus:outline-none focus:ring-2 focus:ring-[#0F382C]">
+          </div>
+
+          <div>
+            <label class="block font-semibold text-[#192A24] mb-1">Email</label>
+            <input type="email" id="reg-email" required placeholder="farhan@example.com" class="w-full px-3.5 py-2.5 rounded-xl border border-[#D5D2C7] bg-[#FAF8F5] text-sm focus:outline-none focus:ring-2 focus:ring-[#0F382C]">
+          </div>
+
+          <div>
+            <label class="block font-semibold text-[#192A24] mb-1">Nomor Telepon / WhatsApp</label>
+            <input type="tel" id="reg-phone" required placeholder="08123456789" class="w-full px-3.5 py-2.5 rounded-xl border border-[#D5D2C7] bg-[#FAF8F5] text-sm focus:outline-none focus:ring-2 focus:ring-[#0F382C]">
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block font-semibold text-[#192A24] mb-1">Password</label>
+              <input type="password" id="reg-pass" required placeholder="••••••••" class="w-full px-3.5 py-2.5 rounded-xl border border-[#D5D2C7] bg-[#FAF8F5] text-sm focus:outline-none focus:ring-2 focus:ring-[#0F382C]">
+            </div>
+            <div>
+              <label class="block font-semibold text-[#192A24] mb-1">Konfirmasi</label>
+              <input type="password" id="reg-pass-confirm" required placeholder="••••••••" class="w-full px-3.5 py-2.5 rounded-xl border border-[#D5D2C7] bg-[#FAF8F5] text-sm focus:outline-none focus:ring-2 focus:ring-[#0F382C]">
+            </div>
+          </div>
+
+          <div class="pt-2">
+            <button type="submit" class="w-full py-3 rounded-xl bg-[#0F382C] hover:bg-[#164E3F] text-white font-bold text-sm tracking-wide transition-all shadow-md">
+              Daftar Sekarang & Mulai Reservasi
+            </button>
+          </div>
+        </form>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="p-6 text-center text-xs text-[#5C6F67] border-t border-[#E6E3D8] max-w-7xl mx-auto w-full">
+    Smart Parking System © 2026. ESP32 IoT & Web-Based Parking Reservation.
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/audio.js"></script>
+  <script src="js/data.js"></script>
+  <script>
+    function switchAuthTab(tab) {
+      const loginView = document.getElementById('auth-view-login');
+      const regView = document.getElementById('auth-view-register');
+      const loginBtn = document.getElementById('tab-btn-login');
+      const regBtn = document.getElementById('tab-btn-register');
+      const alertEl = document.getElementById('auth-alert');
+      alertEl.classList.add('hidden');
+
+      if (tab === 'login') {
+        loginView.classList.remove('hidden');
+        regView.classList.add('hidden');
+        loginBtn.className = 'flex-1 py-2 rounded-xl text-xs font-bold transition-all bg-[#0F382C] text-white shadow-sm';
+        regBtn.className = 'flex-1 py-2 rounded-xl text-xs font-bold transition-all text-[#5C6F67] hover:text-[#192A24]';
+      } else {
+        loginView.classList.add('hidden');
+        regView.classList.remove('hidden');
+        regBtn.className = 'flex-1 py-2 rounded-xl text-xs font-bold transition-all bg-[#0F382C] text-white shadow-sm';
+        loginBtn.className = 'flex-1 py-2 rounded-xl text-xs font-bold transition-all text-[#5C6F67] hover:text-[#192A24]';
+      }
+    }
+
+    function showAlert(msg, type = 'danger') {
+      const alertEl = document.getElementById('auth-alert');
+      const alertMsg = document.getElementById('auth-alert-msg');
+      alertEl.classList.remove('hidden', 'bg-rose-50', 'text-rose-800', 'border-rose-200', 'bg-emerald-50', 'text-emerald-800', 'border-emerald-200');
+      
+      if (type === 'danger') {
+        alertEl.classList.add('bg-rose-50', 'text-rose-800', 'border', 'border-rose-200');
+      } else {
+        alertEl.classList.add('bg-emerald-50', 'text-emerald-800', 'border', 'border-emerald-200');
+      }
+      alertMsg.textContent = msg;
+    }
+
+    async function handleUserLogin(e) {
+      e.preventDefault();
+      const email = document.getElementById('user-login-email').value;
+      const pass = document.getElementById('user-login-pass').value;
+
+      try {
+        const store = window.smartParkingStore;
+        // Allows user
+        const user = await store.login(email, pass);
+        
+        if (window.buzzerAudio) window.buzzerAudio.beepSuccess();
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const slot = urlParams.get('slot');
+        if (user.role === 'admin') {
+          window.location.href = 'admin-dashboard.html';
+        } else {
+          window.location.href = slot ? `user-dashboard.html?bookSlot=${slot}` : 'user-dashboard.html';
+        }
+      } catch (err) {
+        showAlert(err.message, 'danger');
+        if (window.buzzerAudio) window.buzzerAudio.beepError();
+      }
+    }
+
+    async function handleUserRegister(e) {
+      e.preventDefault();
+      const name = document.getElementById('reg-name').value;
+      const email = document.getElementById('reg-email').value;
+      const phone = document.getElementById('reg-phone').value;
+      const pass = document.getElementById('reg-pass').value;
+      const passConfirm = document.getElementById('reg-pass-confirm').value;
+
+      if (pass !== passConfirm) {
+        showAlert('Konfirmasi password tidak cocok dengan password yang dimasukkan!', 'danger');
+        return;
+      }
+
+      try {
+        const store = window.smartParkingStore;
+        const newUser = await store.registerUser({
+          name,
+          email,
+          phone,
+          password: pass
+        });
+
+        showAlert('Registrasi berhasil! Mengalihkan ke dashboard pengguna...', 'success');
+        if (window.buzzerAudio) window.buzzerAudio.beepSuccess();
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const slot = urlParams.get('slot');
+        setTimeout(() => {
+          window.location.href = slot ? `user-dashboard.html?bookSlot=${slot}` : 'user-dashboard.html';
+        }, 1000);
+      } catch (err) {
+        showAlert(err.message, 'danger');
+        if (window.buzzerAudio) window.buzzerAudio.beepError();
+      }
+    }
+  </script>
+</body>
+</html>

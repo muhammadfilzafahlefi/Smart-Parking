@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Parking System – Executive Precision meets IoT Telemetry</title>
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%230F382C'><rect width='24' height='24' rx='6' fill='%230F382C'/><text x='50%25' y='68%25' font-size='14' font-weight='bold' fill='white' text-anchor='middle'>P</text></svg>">
+
+  <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            forest: {
+              DEFAULT: '#0F382C',
+              hover: '#164E3F',
+              dark: '#0B2820',
+              light: '#E8F2EE'
+            },
+            cream: {
+              DEFAULT: '#FAF8F5',
+              alt: '#F4F2EB'
+            },
+            sand: {
+              DEFAULT: '#E6E3D8',
+              border: '#D5D2C7'
+            },
+            slateText: {
+              primary: '#192A24',
+              secondary: '#5C6F67'
+            }
+          },
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Custom Stylesheet adhering to Harborlight Hotel aesthetic & PRD -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-[#FAF8F5] text-[#192A24] antialiased selection:bg-[#0F382C] selection:text-white flex flex-col min-h-screen">
+
+  <!-- ========================================================================= -->
+  <!-- TOP NAVIGATION BAR                                                        -->
+  <!-- ========================================================================= -->
+  <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-[#E6E3D8]">
+    <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between gap-2">
+      
+      <!-- Logo Branding -->
+      <a href="index.html" class="flex items-center gap-2 sm:gap-3.5 group min-w-0">
+        <div class="w-10 h-10 sm:w-11 sm:h-11 shrink-0 rounded-xl bg-[#0F382C] text-white flex items-center justify-center font-bold text-lg group-hover:scale-105 transition-transform shadow-md">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+        </div>
+        <div class="min-w-0">
+          <span class="font-serif tracking-wide sm:tracking-wider font-extrabold text-sm sm:text-xl text-[#0F382C] block leading-none whitespace-nowrap">SMART PARKING</span>
+          <span class="hidden sm:block text-[10px] text-[#5C6F67] tracking-widest font-mono uppercase mt-1">IoT TELEMETRY & RESERVATION</span>
+        </div>
+      </a>
+
+      <!-- Navigation Links -->
+      <nav class="hidden md:flex items-center gap-8 text-xs font-semibold text-[#5C6F67]">
+        <a href="#hero" class="hover:text-[#0F382C] transition-colors">Beranda</a>
+        <a href="#slot-viewer" class="hover:text-[#0F382C] transition-colors flex items-center gap-1.5">
+          <span>Ketersediaan Slot</span>
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+        </a>
+        <a href="#how-it-works" class="hover:text-[#0F382C] transition-colors">Cara Kerja</a>
+        <a href="#iot-specs" class="hover:text-[#0F382C] transition-colors">Spesifikasi IoT</a>
+      </nav>
+
+      <!-- Dynamic Header Actions based on Auth Session -->
+      <div id="nav-auth-container" class="flex items-center gap-1.5 sm:gap-3 shrink-0">
+        <!-- Rendered dynamically by script below -->
+        <a href="login-user.html" class="text-[11px] sm:text-xs font-semibold text-[#0F382C] hover:bg-[#F4F2EB] px-2 sm:px-3.5 py-2 rounded-xl transition-colors whitespace-nowrap">
+          Masuk
+        </a>
+        <a href="login-admin.html" class="text-[11px] sm:text-xs font-bold bg-[#0F382C] hover:bg-[#164E3F] text-white px-2.5 sm:px-4 py-2 rounded-xl transition-all shadow-sm whitespace-nowrap">
+          <span class="sm:hidden">Admin</span><span class="hidden sm:inline">Portal Admin &rarr;</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ========================================================================= -->
+  <!-- HERO SECTION                                                              -->
+  <!-- ========================================================================= -->
+  <section id="hero" class="relative overflow-hidden py-8 sm:py-14 lg:py-20 border-b border-[#E6E3D8] bg-gradient-to-b from-[#FAF8F5] via-white to-[#FAF8F5]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+        
+        <!-- Left Hero Text -->
+        <div class="lg:col-span-7 space-y-5 sm:space-y-6">
+          <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-[#0F382C] text-xs font-mono font-medium">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+            <span>ESP32 IoT Photodiode Optical Telemetry Live</span>
+          </div>
+
+          <h1 class="text-[1.75rem] sm:text-5xl font-extrabold text-[#192A24] tracking-tight leading-tight">
+            Pantau Ketersediaan Parkir Mobil Secara <span class="text-[#0F382C] underline decoration-[#A2C7B8] decoration-4">Presisi & Real-Time</span>
+          </h1>
+
+          <p class="text-sm sm:text-base text-[#5C6F67] leading-relaxed max-w-2xl">
+            Solusi parkir eksekutif terintegrasi mikrokontroler ESP32, sensor photodiode optik, audio buzzer konfirmasi, dan sistem booking anti double-booking dengan transparansi status fisik.
+          </p>
+
+          <!-- Quick Metrics Badges -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 pt-2 max-w-xl">
+            <div class="p-2.5 sm:p-3.5 rounded-2xl bg-white border border-[#E6E3D8] shadow-sm">
+              <span class="text-[11px] font-medium text-[#5C6F67] block">Total Kapasitas</span>
+              <span class="text-2xl font-mono font-bold text-[#192A24] mt-0.5 block">4 Slot</span>
+            </div>
+            <div class="p-2.5 sm:p-3.5 rounded-2xl bg-white border border-rose-200 shadow-sm">
+              <span class="text-[11px] font-medium text-rose-700 block">🔴 Slot Kosong</span>
+              <span id="hero-empty-count" class="text-2xl font-mono font-bold text-rose-700 mt-0.5 block">2</span>
+            </div>
+            <div class="p-2.5 sm:p-3.5 rounded-2xl bg-white border border-amber-300 shadow-sm">
+              <span class="text-[11px] font-medium text-amber-800 block">🟡 Direservasi</span>
+              <span id="hero-reserved-count" class="text-2xl font-mono font-bold text-amber-800 mt-0.5 block">0</span>
+            </div>
+            <div class="p-2.5 sm:p-3.5 rounded-2xl bg-white border border-emerald-200 shadow-sm">
+              <span class="text-[11px] font-medium text-emerald-700 block">🟢 Slot Terisi</span>
+              <span id="hero-occupied-count" class="text-2xl font-mono font-bold text-emerald-700 mt-0.5 block">2</span>
+            </div>
+          </div>
+
+          <!-- CTAs -->
+          <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 pt-2">
+            <a href="#slot-viewer" class="w-full sm:w-auto justify-center px-4 sm:px-6 py-3.5 rounded-2xl bg-[#0F382C] hover:bg-[#164E3F] text-white font-bold text-sm tracking-wide transition-all shadow-md hover:shadow-lg flex items-center gap-2">
+              <span>Lihat Denah Slot Parkir</span>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </a>
+            <a href="login-user.html" class="w-full sm:w-auto justify-center px-4 sm:px-6 py-3.5 rounded-2xl bg-white hover:bg-[#FAF8F5] text-[#0F382C] border border-[#D5D2C7] font-bold text-sm transition-all shadow-sm flex items-center gap-2">
+              <span>Booking Slot Sekarang &rarr;</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Right Hero Visual Card -->
+        <div class="lg:col-span-5">
+          <div class="p-6 sm:p-8 rounded-3xl bg-white border border-[#E6E3D8] shadow-xl relative overflow-hidden">
+            <div class="flex items-center justify-between pb-4 border-b border-[#E6E3D8]">
+              <div class="flex items-center gap-2.5">
+                <div class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></div>
+                <span class="text-xs font-mono font-bold text-[#0F382C]">BROWSER_LOCAL</span>
+              </div>
+              <span id="hero-heartbeat-pill" class="text-[11px] font-mono px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 font-semibold">
+                Simulasi Lokal
+              </span>
+            </div>
+
+            <div class="py-5 space-y-3.5">
+              <div class="flex items-center justify-between text-xs">
+                <span class="text-[#5C6F67]">Lokasi Area Parkir:</span>
+                <span class="font-semibold text-[#192A24]">Gedung Utama Ground Floor</span>
+              </div>
+              <div class="flex items-center justify-between text-xs">
+                <span class="text-[#5C6F67]">Tarif Resmi:</span>
+                <span class="font-mono font-bold text-[#0F382C] text-sm">Rp 5.000 / jam</span>
+              </div>
+              <div class="flex items-center justify-between text-xs">
+                <span class="text-[#5C6F67]">Metode Pembayaran:</span>
+                <span class="font-medium text-[#192A24]">Transfer Bank BCA (Otomatis Verifikasi)</span>
+              </div>
+              <div class="flex items-center justify-between text-xs">
+                <span class="text-[#5C6F67]">Sensor Optik:</span>
+                <span class="font-mono text-slate-700">Photodiode (Ambang Batas: 2000 ADC)</span>
+              </div>
+            </div>
+
+            <!-- Legend Status Note per PRD FR-PARK-003 & Reservation -->
+            <div class="p-4 rounded-2xl bg-[#FAF8F5] border border-[#E6E3D8] text-xs space-y-2">
+              <span class="font-bold text-[11px] text-[#0F382C] uppercase tracking-wider block">Standar Indikator Warna Status:</span>
+              <div class="grid grid-cols-3 gap-2 text-[11px]">
+                <div class="flex items-center gap-1.5">
+                  <span class="w-3 h-3 rounded-full bg-red-600 flex-shrink-0"></span>
+                  <span class="font-medium">Merah = Kosong</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <span class="w-3 h-3 rounded-full bg-amber-500 flex-shrink-0"></span>
+                  <span class="font-medium text-amber-900 font-bold">Kuning = Direservasi</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <span class="w-3 h-3 rounded-full bg-emerald-600 flex-shrink-0"></span>
+                  <span class="font-medium">Hijau = Terisi</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- REAL-TIME PARKING SLOT VIEWER (HALAMAN UTAMA FITUR UTAMA)                -->
+  <!-- ========================================================================= -->
+  <section id="slot-viewer" class="py-10 sm:py-16 bg-[#FAF8F5] border-b border-[#E6E3D8]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <!-- Section Header -->
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-7 sm:mb-10">
+        <div>
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100 text-emerald-900 text-[11px] font-mono font-semibold uppercase tracking-wider mb-2">
+            Live Physical Sensor Telemetry
+          </div>
+          <h2 class="text-2xl sm:text-3xl font-extrabold text-[#192A24] tracking-tight">
+            Denah & Status Ketersediaan 4 Slot Parkir
+          </h2>
+          <p class="text-xs sm:text-sm text-[#5C6F67] mt-1">
+            Data diperbarui secara instan dari sensor photodiode ESP32. Klik pada slot untuk melihat rincian reservasi.
+          </p>
+        </div>
+
+        <!-- Telemetry Live Controller Bar -->
+        <div class="flex items-center gap-3 flex-wrap">
+          <div id="live-audio-pill" class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-[#E6E3D8] text-xs font-mono text-[#0F382C]">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span>Audio Buzzer Siap</span>
+          </div>
+          <!-- ESP32 Hardware Connection Pill -->
+          <div id="index-esp32-pill" class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-[#E6E3D8] text-xs font-mono text-slate-500">
+            <span class="w-2 h-2 rounded-full bg-slate-400"></span>
+            <span>Mode browser lokal</span>
+          </div>
+          <button type="button" onclick="refreshSlotData()" class="px-3.5 py-2 rounded-xl bg-white hover:bg-[#F4F2EB] border border-[#D5D2C7] text-xs font-semibold text-[#0F382C] flex items-center gap-1.5 transition-colors shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            <span>Muat Ulang</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 4-Slot Grid (A01, A02, A03, A04) -->
+      <div id="slots-grid-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- Rendered dynamically by javascript below -->
+      </div>
+
+      <!-- Parking Lot Visual Schematic Representation -->
+      <div class="mt-8 sm:mt-12 p-3 sm:p-6 lg:p-8 rounded-3xl bg-white border border-[#E6E3D8] shadow-sm">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pb-4 border-b border-[#E6E3D8] mb-4 sm:mb-6">
+          <h3 class="font-bold text-sm text-[#192A24] flex items-center gap-2 min-w-0">
+            <svg class="w-5 h-5 shrink-0 text-[#0F382C]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+            <span>Skema Jalur Lalu Lintas Parkir (Driveway & Bay)</span>
+          </h3>
+          <span class="text-[10px] sm:text-xs font-mono text-[#5C6F67] leading-relaxed">Gate Masuk &rarr; Lane 1 &rarr; Gate Keluar</span>
+        </div>
+
+        <div class="relative bg-[#FAF8F5] border-2 border-dashed border-[#D5D2C7] rounded-2xl p-3 sm:p-6 lg:p-8 overflow-hidden">
+          <!-- Driveway Road Markings -->
+          <div class="min-h-12 py-2 px-2 bg-slate-200 rounded-xl mb-4 sm:mb-8 flex flex-col sm:flex-row items-center justify-around gap-1 text-slate-500 font-mono text-[9px] sm:text-xs font-bold tracking-wide sm:tracking-widest uppercase text-center">
+            <span>&larr; Jalur Masuk</span>
+            <span>- - - - - - JALUR SIRKULASI UTAMA - - - - - -</span>
+            <span>Jalur Keluar &rarr;</span>
+          </div>
+
+          <!-- Parking Bays -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4 text-center">
+            <div id="bay-A01" class="p-2.5 sm:p-4 rounded-xl border-2 transition-all">
+              <span class="text-[10px] sm:text-xs font-mono font-bold block mb-1">BAY A01</span>
+              <div id="bay-car-A01" class="text-xl sm:text-2xl py-2">🚗</div>
+              <span id="bay-status-A01" class="text-[9px] sm:text-[10px] font-mono font-bold uppercase">Memuat...</span>
+            </div>
+            <div id="bay-A02" class="p-2.5 sm:p-4 rounded-xl border-2 transition-all">
+              <span class="text-[10px] sm:text-xs font-mono font-bold block mb-1">BAY A02</span>
+              <div id="bay-car-A02" class="text-xl sm:text-2xl py-2">🚗</div>
+              <span id="bay-status-A02" class="text-[9px] sm:text-[10px] font-mono font-bold uppercase">Memuat...</span>
+            </div>
+            <div id="bay-A03" class="p-2.5 sm:p-4 rounded-xl border-2 transition-all">
+              <span class="text-[10px] sm:text-xs font-mono font-bold block mb-1">BAY A03</span>
+              <div id="bay-car-A03" class="text-xl sm:text-2xl py-2">🚗</div>
+              <span id="bay-status-A03" class="text-[9px] sm:text-[10px] font-mono font-bold uppercase">Memuat...</span>
+            </div>
+            <div id="bay-A04" class="p-2.5 sm:p-4 rounded-xl border-2 transition-all">
+              <span class="text-[10px] sm:text-xs font-mono font-bold block mb-1">BAY A04</span>
+              <div id="bay-car-A04" class="text-xl sm:text-2xl py-2">🚗</div>
+              <span id="bay-status-A04" class="text-[9px] sm:text-[10px] font-mono font-bold uppercase">Memuat...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- CARA KERJA & ALUR RESERVASI                                              -->
+  <!-- ========================================================================= -->
+  <section id="how-it-works" class="py-16 bg-white border-b border-[#E6E3D8]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center max-w-2xl mx-auto mb-12">
+        <span class="text-xs font-mono uppercase text-[#5C6F67] tracking-widest font-bold block mb-2">Panduan Pengguna</span>
+        <h2 class="text-2xl sm:text-3xl font-extrabold text-[#192A24] tracking-tight">Alur Reservasi & Parkir Otomatis</h2>
+        <p class="text-xs sm:text-sm text-[#5C6F67] mt-2">
+          Nikmati kemudahan reservasi tanpa kekhawatiran slot terisi saat tiba di lokasi.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        
+        <!-- Step 1 -->
+        <div class="p-6 rounded-3xl bg-[#FAF8F5] border border-[#E6E3D8] hover:border-[#0F382C] transition-colors relative">
+          <div class="w-10 h-10 rounded-2xl bg-[#0F382C] text-white flex items-center justify-center font-bold text-sm mb-4">
+            1
+          </div>
+          <h3 class="text-base font-bold text-[#192A24] mb-2">Cek Slot & Pilih Jadwal</h3>
+          <p class="text-xs text-[#5C6F67] leading-relaxed">
+            Periksa ketersediaan slot A01–A04 secara real-time. Pilih rentang jam parkir yang diinginkan dengan tarif transparan Rp 5.000 / jam. Sistem otomatis memvalidasi konflik double booking.
+          </p>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="p-6 rounded-3xl bg-[#FAF8F5] border border-[#E6E3D8] hover:border-[#0F382C] transition-colors relative">
+          <div class="w-10 h-10 rounded-2xl bg-[#0F382C] text-white flex items-center justify-center font-bold text-sm mb-4">
+            2
+          </div>
+          <h3 class="text-base font-bold text-[#192A24] mb-2">Transfer BCA & Verifikasi</h3>
+          <p class="text-xs text-[#5C6F67] leading-relaxed">
+            Lakukan pembayaran via Transfer Bank BCA ke rekening 8830-1928-100 dan unggah bukti transfer. Administrator memvalidasi pembayaran dan tiket E-Ticket diterbitkan.
+          </p>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="p-6 rounded-3xl bg-[#FAF8F5] border border-[#E6E3D8] hover:border-[#0F382C] transition-colors relative">
+          <div class="w-10 h-10 rounded-2xl bg-[#0F382C] text-white flex items-center justify-center font-bold text-sm mb-4">
+            3
+          </div>
+          <h3 class="text-base font-bold text-[#192A24] mb-2">Sensor ESP32 & Validasi Kedatangan</h3>
+          <p class="text-xs text-[#5C6F67] leading-relaxed">
+            Saat mobil masuk slot, sensor photodiode mendeteksi cahaya terhalang (&lt;2000 ADC), buzzer berbunyi, dan notifikasi konfirmasi kedatangan muncul otomatis di smartphone Anda.
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- SPESIFIKASI IoT & PERANGKAT KERAS                                         -->
+  <!-- ========================================================================= -->
+  <section id="iot-specs" class="py-16 bg-[#0B2820] text-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+        
+        <div class="lg:col-span-6 space-y-4">
+          <span class="text-xs font-mono uppercase tracking-widest text-emerald-400 font-bold block">Spesifikasi Arsitektur IoT</span>
+          <h2 class="text-2xl sm:text-4xl font-extrabold tracking-tight">Mikrokontroler ESP32 & Sensor Optik Presisi Tinggi</h2>
+          <p class="text-xs sm:text-sm text-[#A2C7B8] leading-relaxed">
+            Sistem dirancang dengan pemisahan tegas antara status fisik telemetri sensor dengan status jadwal reservasi database, mencegah miskomunikasi status bagi pengemudi.
+          </p>
+          
+          <div class="space-y-3 pt-2 text-xs">
+            <div class="flex items-start gap-3">
+              <div class="w-5 h-5 rounded-full bg-emerald-900 border border-emerald-500 flex items-center justify-center text-emerald-300 font-bold text-[10px] flex-shrink-0 mt-0.5">✓</div>
+              <div>
+                <strong class="text-white block font-semibold">Sensor Optik Photodiode (0–4095 ADC)</strong>
+                <span class="text-[#A2C7B8]">Threshold kalibrasi 2000 ADC. Nilai &lt; 2000 ADC menandakan slot terhalang mobil (Terisi).</span>
+              </div>
+            </div>
+            <div class="flex items-start gap-3">
+              <div class="w-5 h-5 rounded-full bg-emerald-900 border border-emerald-500 flex items-center justify-center text-emerald-300 font-bold text-[10px] flex-shrink-0 mt-0.5">✓</div>
+              <div>
+                <strong class="text-white block font-semibold">Audio Synthesizer Web Audio API</strong>
+                <span class="text-[#A2C7B8]">Frekuensi buzzer ESP32 presisi: 1800Hz (Deteksi Masuk), 2400Hz (Peringatan), 1200-1800Hz (Konfirmasi).</span>
+              </div>
+            </div>
+            <div class="flex items-start gap-3">
+              <div class="w-5 h-5 rounded-full bg-emerald-900 border border-emerald-500 flex items-center justify-center text-emerald-300 font-bold text-[10px] flex-shrink-0 mt-0.5">✓</div>
+              <div>
+                <strong class="text-white block font-semibold">Keepalive Heartbeat 30 Detik</strong>
+                <span class="text-[#A2C7B8]">Deteksi otomatis kegagalan koneksi sensor. Jika sinyal terputus, slot beralih ke status Gray (Unknown).</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-6">
+          <div class="p-6 rounded-3xl bg-[#0F382C] border border-[#164E3F] space-y-4 font-mono text-xs">
+            <div class="flex items-center justify-between pb-3 border-b border-[#164E3F]">
+              <span class="text-emerald-400 font-bold">// ESP32 FIRMWARE CONFIG</span>
+              <span class="text-[10px] text-slate-400">smart_parking.ino</span>
+            </div>
+            <div class="text-[#D1E0DA] space-y-1.5 overflow-x-auto text-[11px] leading-relaxed">
+              <p><span class="text-amber-400">#define</span> SENSOR_PIN_A01 <span class="text-emerald-400">34</span></p>
+              <p><span class="text-amber-400">#define</span> SENSOR_PIN_A02 <span class="text-emerald-400">35</span></p>
+              <p><span class="text-amber-400">#define</span> SENSOR_PIN_A03 <span class="text-emerald-400">32</span></p>
+              <p><span class="text-amber-400">#define</span> SENSOR_PIN_A04 <span class="text-emerald-400">33</span></p>
+              <p><span class="text-amber-400">#define</span> BUZZER_PIN <span class="text-emerald-400">25</span></p>
+              <p><span class="text-amber-400">#define</span> THRESHOLD_VAL <span class="text-emerald-400">2000</span> <span class="text-slate-400">// ADC Level</span></p>
+              <p class="pt-2 text-slate-400">// Physical LED Indikator Rule:</p>
+              <p class="text-rose-400">digitalWrite(LED_RED, sensorVal > THRESHOLD ? HIGH : LOW); // Kosong</p>
+              <p class="text-emerald-400">digitalWrite(LED_GREEN, sensorVal &lt;= THRESHOLD ? HIGH : LOW); // Terisi</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- FOOTER                                                                    -->
+  <!-- ========================================================================= -->
+  <footer class="mt-auto bg-white border-t border-[#E6E3D8] py-8 text-xs text-[#5C6F67]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <span class="font-bold text-[#0F382C]">Smart Parking System © 2026</span>
+        <span>•</span>
+        <span>Executive Precision meets IoT Telemetry</span>
+      </div>
+      <div class="flex items-center gap-4">
+        <a href="login-user.html" class="hover:text-[#0F382C] font-medium">Portal Pengguna</a>
+        <span>•</span>
+        <a href="login-admin.html" class="hover:text-[#0F382C] font-medium">Portal Admin</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: RINCIAN SLOT PARKIR                                                -->
+  <!-- ========================================================================= -->
+  <dialog id="modal-slot-detail" class="w-full max-w-md p-0 rounded-2xl overflow-hidden shadow-2xl border-none">
+    <div class="bg-[#0F382C] text-white p-5 flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <span id="detail-slot-code" class="font-mono text-xl font-extrabold px-2.5 py-0.5 rounded-lg bg-white/10 border border-white/20">A01</span>
+        <div>
+          <h3 class="font-bold text-sm">Rincian Slot Parkir</h3>
+          <span class="text-[10px] text-[#A2C7B8]">Ground Floor • Zone A</span>
+        </div>
+      </div>
+      <button type="button" onclick="document.getElementById('modal-slot-detail').close()" class="text-white/70 hover:text-white p-1 rounded-lg">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <div class="p-6 bg-white space-y-4 text-xs">
+      <div class="p-4 rounded-xl bg-[#FAF8F5] border border-[#E6E3D8] space-y-2.5">
+        <div class="flex items-center justify-between">
+          <span class="text-[#5C6F67]">Status Sensor Fisik:</span>
+          <span id="detail-physical-status" class="font-bold">Memuat...</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-[#5C6F67]">Nilai ADC Sensor:</span>
+          <span id="detail-adc-val" class="font-mono font-bold text-slate-800">3200 ADC</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-[#5C6F67]">Terakhir Dideteksi:</span>
+          <span id="detail-detected-time" class="font-mono text-slate-600">Baru saja</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-[#5C6F67]">Tarif:</span>
+          <span class="font-mono font-bold text-[#0F382C]">Rp 5.000 / jam</span>
+        </div>
+      </div>
+
+      <div id="detail-schedule-info" class="p-4 rounded-xl border space-y-1">
+        <!-- Rendered by JS -->
+      </div>
+
+      <div class="pt-2 flex items-center gap-3">
+        <button type="button" onclick="document.getElementById('modal-slot-detail').close()" class="flex-1 py-2.5 rounded-xl border border-[#D5D2C7] font-semibold text-[#5C6F67] hover:bg-[#FAF8F5]">
+          Tutup
+        </button>
+        <button type="button" id="detail-booking-btn" class="flex-1 py-2.5 rounded-xl bg-[#0F382C] hover:bg-[#164E3F] text-white font-bold transition-all shadow-sm">
+          Pesan Slot Ini &rarr;
+        </button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- ========================================================================= -->
+  <!-- FLOATING HARDWARE SIMULATOR DRAWER                                        -->
+  <!-- ========================================================================= -->
+  <dialog id="modal-hardware-sim" class="w-full max-w-lg p-0 rounded-2xl overflow-hidden shadow-2xl border-none">
+    <div class="bg-[#0B2820] text-white p-5 flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <div class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></div>
+        <div>
+          <h3 class="font-bold text-sm">ESP32 Hardware Simulator</h3>
+          <span class="text-[10px] text-[#A2C7B8] font-mono">Baud 115200 • ADC Telemetry Injector</span>
+        </div>
+      </div>
+      <button type="button" onclick="document.getElementById('modal-hardware-sim').close()" class="text-white/70 hover:text-white p-1 rounded-lg">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <div class="p-6 bg-white space-y-5 text-xs text-[#192A24]">
+      <div>
+        <span class="font-bold text-xs block mb-1 text-[#0F382C]">Simulasi Kehadiran Kendaraan (Mobil Masuk/Keluar)</span>
+        <p class="text-[11px] text-[#5C6F67]">Ubah status sensor optik photodiode pada masing-masing slot untuk menguji pembaruan real-time dan audio buzzer.</p>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3" id="sim-slots-container">
+        <!-- Injected by JS -->
+      </div>
+
+      <div class="p-4 rounded-xl bg-[#FAF8F5] border border-[#E6E3D8] space-y-3">
+        <span class="font-bold text-xs block text-[#0F382C]">Uji Coba Audio Buzzer Synthesizer:</span>
+        <div class="grid grid-cols-3 gap-2">
+          <button type="button" onclick="window.buzzerAudio && window.buzzerAudio.beepDetection()" class="p-2 rounded-lg bg-white border border-[#D5D2C7] font-semibold text-[11px] hover:bg-emerald-50 text-emerald-900 transition-colors">
+            🔊 Beep Masuk
+          </button>
+          <button type="button" onclick="window.buzzerAudio && window.buzzerAudio.beepSuccess()" class="p-2 rounded-lg bg-white border border-[#D5D2C7] font-semibold text-[11px] hover:bg-emerald-50 text-emerald-900 transition-colors">
+            🎵 Chime Valid
+          </button>
+          <button type="button" onclick="window.buzzerAudio && window.buzzerAudio.beepAlert()" class="p-2 rounded-lg bg-white border border-rose-200 font-semibold text-[11px] hover:bg-rose-50 text-rose-900 transition-colors">
+            ⚠️ Alert Error
+          </button>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between pt-2">
+        <button type="button" onclick="toggleIotDeviceOnline()" id="btn-toggle-device-status" class="px-3.5 py-2 rounded-xl border border-slate-300 font-semibold text-slate-700 hover:bg-slate-100">
+          Putuskan ESP32 (Offline)
+        </button>
+        <button type="button" onclick="document.getElementById('modal-hardware-sim').close()" class="px-5 py-2 rounded-xl bg-[#0F382C] text-white font-bold hover:bg-[#164E3F]">
+          Selesai
+        </button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- ========================================================================= -->
+  <!-- SCRIPTS & CONTROLLER                                                      -->
+  <!-- ========================================================================= -->
+  <script src="js/audio.js"></script>
+  <script src="js/data.js"></script>
+  <script>
+    const store = window.smartParkingStore;
+
+    // --- AUTH STATE IN HEADER ---
+    function updateNavAuth() {
+      const adminUser = store.getSessionUser('admin');
+      const regularUser = store.getSessionUser('user');
+      const container = document.getElementById('nav-auth-container');
+      if (!container) return;
+
+      if (!adminUser && !regularUser) {
+        container.innerHTML = `
+          <a href="login-user.html" class="text-[11px] sm:text-xs font-semibold text-[#0F382C] hover:bg-[#F4F2EB] px-2 sm:px-3.5 py-2 rounded-xl transition-colors whitespace-nowrap">
+            <span class="sm:hidden">Masuk</span><span class="hidden sm:inline">Masuk Pengguna</span>
+          </a>
+          <a href="login-admin.html" class="text-[11px] sm:text-xs font-bold bg-[#0F382C] hover:bg-[#164E3F] text-white px-2.5 sm:px-4 py-2 rounded-xl transition-all shadow-sm whitespace-nowrap">
+            <span class="sm:hidden">Admin</span><span class="hidden sm:inline">Portal Admin &rarr;</span>
+          </a>
+        `;
+      } else {
+        let buttons = '';
+        if (regularUser) {
+          buttons += `
+            <a href="user-dashboard.html" class="text-[11px] sm:text-xs font-bold bg-[#0F382C] hover:bg-[#164E3F] text-white px-2.5 sm:px-3.5 py-2 rounded-xl transition-all shadow-sm flex items-center gap-1.5 whitespace-nowrap" title="Buka Dashboard Pengguna">
+              <span class="sm:hidden">Dashboard</span><span class="hidden sm:inline">🚗 Dashboard Saya (${regularUser.name.split(' ')[0]})</span>
+            </a>
+          `;
+        }
+        if (adminUser) {
+          buttons += `
+            <a href="admin-dashboard.html" class="text-[11px] sm:text-xs font-bold bg-[#164E3F] hover:bg-[#206854] text-emerald-200 hover:text-white px-2.5 sm:px-3.5 py-2 rounded-xl border border-[#2D735E] transition-all shadow-sm flex items-center gap-1.5 whitespace-nowrap" title="Buka Portal Admin">
+              <span class="sm:hidden">Admin</span><span class="hidden sm:inline">⚙️ Dashboard Admin</span>
+            </a>
+          `;
+        }
+        if (!regularUser && adminUser) {
+          buttons += `
+            <a href="login-user.html" class="text-[11px] sm:text-xs font-semibold text-[#0F382C] hover:bg-[#F4F2EB] px-2 sm:px-3 py-1.5 rounded-xl border border-[#D5D2C7] transition-colors whitespace-nowrap">
+              <span class="sm:hidden">Masuk</span><span class="hidden sm:inline">Masuk Pengguna</span>
+            </a>
+          `;
+        }
+        buttons += `
+          <button onclick="handleLogout()" title="Keluar dari Semua Sesi" class="p-1.5 sm:p-2 shrink-0 text-rose-600 hover:bg-rose-50 rounded-xl border border-rose-200">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+          </button>
+        `;
+        container.innerHTML = `<div class="flex items-center gap-1.5 sm:gap-2">${buttons}</div>`;
+      }
+    }
+
+    async function handleLogout() {
+      await store.logout();
+      updateNavAuth();
+    }
+
+    // --- RENDER REAL-TIME SLOTS (PRD FR-PARK-003 & RESERVATION STATUS) ---
+    function renderSlots() {
+      const slots = store.getSlots();
+      const container = document.getElementById('slots-grid-container');
+      if (!container) return;
+
+      let emptyCount = 0;
+      let reservedCount = 0;
+      let occupiedCount = 0;
+
+      container.innerHTML = slots.map(slot => {
+        // Physical sensor state
+        const isOccupied = slot.is_occupied;
+        const isOffline = slot.physical_status === 'unknown';
+
+        // Check active reservation
+        const activeRes = store.getActiveReservationForSlot(slot.id);
+        const isReserved = Boolean(activeRes || slot.is_reserved);
+
+        // Status Card Styling:
+        // Kuning = Sudah Direservasi, Merah = Kosong, Hijau = Terisi, Gray = Offline
+        let badgeBg, badgeText, statusLabel, ledColor, borderColor, cardBg;
+        if (isOffline) {
+          badgeBg = 'bg-slate-100 border border-slate-300';
+          badgeText = 'text-slate-700';
+          statusLabel = 'UNKNOWN / OFFLINE';
+          ledColor = 'bg-slate-400';
+          borderColor = 'border-slate-300';
+          cardBg = 'bg-white';
+        } else if (isReserved) {
+          reservedCount++;
+          // KETIKA SLOT SUDAH DI RESERVASI: Berubah jadi warna KUNING & tampilkan plat mobil
+          badgeBg = 'bg-amber-100 border border-amber-300';
+          badgeText = 'text-amber-900';
+          statusLabel = 'SUDAH DI RESERVASI';
+          ledColor = 'bg-amber-500 animate-pulse';
+          borderColor = 'border-amber-400';
+          cardBg = 'bg-amber-50/50';
+        } else if (isOccupied) {
+          occupiedCount++;
+          badgeBg = 'bg-emerald-50 border border-emerald-300';
+          badgeText = 'text-emerald-800';
+          statusLabel = 'TERISI (ADA MOBIL)';
+          ledColor = 'bg-emerald-500 animate-pulse';
+          borderColor = 'border-emerald-300';
+          cardBg = 'bg-white';
+        } else {
+          emptyCount++;
+          badgeBg = 'bg-rose-50 border border-rose-300';
+          badgeText = 'text-rose-800';
+          statusLabel = 'KOSONG (TERSEDIA)';
+          ledColor = 'bg-rose-500';
+          borderColor = 'border-rose-300';
+          cardBg = 'bg-white';
+        }
+
+        // Update Schematic Bay
+        const bayCarEl = document.getElementById(`bay-car-${slot.slot_code}`);
+        const bayStatusEl = document.getElementById(`bay-status-${slot.slot_code}`);
+        const bayBoxEl = document.getElementById(`bay-${slot.slot_code}`);
+        if (bayBoxEl) {
+          if (isReserved) {
+            bayBoxEl.className = 'p-4 rounded-xl border-2 border-amber-400 bg-amber-50 text-amber-900 transition-all shadow-sm';
+            if (bayCarEl) bayCarEl.textContent = '🚗';
+            if (bayStatusEl) bayStatusEl.textContent = 'DIRESERVASI';
+          } else if (isOccupied) {
+            bayBoxEl.className = 'p-4 rounded-xl border-2 border-emerald-400 bg-emerald-50 text-emerald-900 transition-all';
+            if (bayCarEl) bayCarEl.textContent = '🚗';
+            if (bayStatusEl) bayStatusEl.textContent = 'TERISI';
+          } else {
+            bayBoxEl.className = 'p-4 rounded-xl border-2 border-rose-300 bg-rose-50 text-rose-900 transition-all';
+            if (bayCarEl) bayCarEl.textContent = '🅿️';
+            if (bayStatusEl) bayStatusEl.textContent = 'KOSONG';
+          }
+        }
+
+        return `
+          <div class="${cardBg} rounded-3xl p-6 border-2 ${borderColor} shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+            <div>
+              <!-- Slot Header -->
+              <div class="flex items-center justify-between pb-3 border-b border-[#E6E3D8]">
+                <div class="flex items-center gap-2">
+                  <span class="w-3.5 h-3.5 rounded-full ${ledColor} flex-shrink-0"></span>
+                  <span class="font-mono text-2xl font-black text-[#192A24]">${slot.slot_code}</span>
+                </div>
+                <span class="text-[11px] font-mono font-bold px-2.5 py-1 rounded-full ${badgeBg} ${badgeText}">
+                  ${statusLabel}
+                </span>
+              </div>
+
+              ${isReserved ? `
+                <!-- Plat Mobil Direservasi Banner (Sesuai Permintaan) -->
+                <div class="mt-3.5 p-3 rounded-2xl bg-amber-100/90 border border-amber-300 text-amber-950 flex items-center justify-between shadow-sm">
+                  <div class="flex items-center gap-2.5">
+                    <span class="text-xl">🚗</span>
+                    <div>
+                      <span class="text-[10px] uppercase font-bold text-amber-800 tracking-wider block">Slot ini sudah dipesan</span>
+                      <span class="font-mono text-xs font-bold text-amber-950 tracking-wider">Informasi pemesan bersifat privat</span>
+                    </div>
+                  </div>
+                </div>
+              ` : ''}
+
+              <!-- Sensor Metrics Telemetry -->
+              <div class="py-4 space-y-2.5 text-xs">
+                <div class="flex items-center justify-between">
+                  <span class="text-[#5C6F67]">Nilai Sensor (ADC):</span>
+                  <span class="font-mono font-bold text-slate-800">${slot.sensor_value} ADC</span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <span class="text-[#5C6F67]">Kondisi Sensor:</span>
+                  <span class="font-mono font-semibold ${slot.sensor_value < 2000 ? 'text-emerald-700' : 'text-slate-600'}">
+                    ${slot.sensor_value < 2000 ? 'Cahaya Terhalang' : 'Terkena Cahaya'}
+                  </span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <span class="text-[#5C6F67]">Status Jadwal:</span>
+                  <span class="font-semibold text-xs ${isReserved ? 'text-amber-900 font-bold' : 'text-emerald-700'}">
+                    ${isReserved ? 'Sudah dipesan' : 'Siap Dipesan'}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Action buttons -->
+            <div class="pt-4 border-t border-[#E6E3D8] flex items-center gap-2">
+              <button type="button" onclick="openSlotDetail(${slot.id})" class="flex-1 py-2.5 px-3 rounded-xl bg-[#FAF8F5] hover:bg-[#F4F2EB] border border-[#D5D2C7] font-semibold text-xs text-[#0F382C] transition-colors text-center">
+                Rincian
+              </button>
+              ${isReserved ? `
+                <button type="button" onclick="alert('Slot ${slot.slot_code} sudah dipesan.')" class="flex-1 py-2.5 px-3 rounded-xl bg-amber-200/90 hover:bg-amber-300/80 border border-amber-300 text-amber-900 font-bold text-xs transition-colors shadow-sm text-center flex items-center justify-center gap-1">
+                  <span>🔒 Sudah Dipesan</span>
+                </button>
+              ` : `
+                <button type="button" onclick="handleBookSlot(${slot.id})" class="flex-1 py-2.5 px-3 rounded-xl bg-[#0F382C] hover:bg-[#164E3F] text-white font-bold text-xs transition-colors shadow-sm text-center">
+                  Pesan
+                </button>
+              `}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Update Hero Metrics
+      const heroEmpty = document.getElementById('hero-empty-count');
+      const heroReserved = document.getElementById('hero-reserved-count');
+      const heroOccupied = document.getElementById('hero-occupied-count');
+      if (heroEmpty) heroEmpty.textContent = emptyCount;
+      if (heroReserved) heroReserved.textContent = reservedCount;
+      if (heroOccupied) heroOccupied.textContent = occupiedCount;
+    }
+
+    // --- REFRESH DATA & POLLING ---
+    function refreshSlotData() {
+      store.refreshWithFeedback();
+      updateNavAuth();
+    }
+
+    function handleBookSlot(slotId) {
+      const regularUser = store.getSessionUser('user');
+      if (regularUser) {
+        window.location.href = `user-dashboard.html?bookSlot=${slotId}`;
+      } else {
+        window.location.href = `login-user.html?slot=${slotId}`;
+      }
+    }
+
+    function openSlotDetail(slotId) {
+      const slot = store.getSlotById(slotId);
+      if (!slot) return;
+
+      const modal = document.getElementById('modal-slot-detail');
+      document.getElementById('detail-slot-code').textContent = slot.slot_code;
+      
+      const isOccupied = slot.is_occupied;
+      const activeRes = store.getActiveReservationForSlot(slot.id);
+
+      const statusEl = document.getElementById('detail-physical-status');
+      if (activeRes || slot.is_reserved) {
+        if (!activeRes) {
+          statusEl.innerHTML = '<span class="text-amber-800 font-bold">🟡 SUDAH DIRESERVASI (DETAIL PRIVAT)</span>';
+        } else {
+        statusEl.innerHTML = `
+          <div class="space-y-1">
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300 font-bold text-[11px]">
+              <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+              SUDAH DI RESERVASI
+            </span>
+            <div class="font-mono text-xs font-bold text-amber-950">Plat: ${activeRes.vehicle_plate}</div>
+            <div class="text-[10px] text-slate-500 font-sans">${isOccupied ? '🟢 Kendaraan terdeteksi di slot' : '🟡 Menunggu kendaraan tiba'}</div>
+          </div>
+        `;
+        }
+      } else if (isOccupied) {
+        statusEl.innerHTML = '<span class="text-emerald-700 font-bold">🟢 TERISI (KENDARAAN ADA)</span>';
+      } else {
+        statusEl.innerHTML = '<span class="text-rose-700 font-bold">🔴 KOSONG (TERSEDIA)</span>';
+      }
+      
+      document.getElementById('detail-adc-val').textContent = `${slot.sensor_value} ADC (Threshold: 2000)`;
+      document.getElementById('detail-detected-time').textContent = new Date(slot.last_detected_at).toLocaleTimeString('id-ID');
+
+      // Schedule list
+      const reservations = store.getReservations().filter(r => 
+        r.parking_slot_id === slot.id && 
+        ['confirmed', 'waiting_verification', 'waiting_arrival', 'active', 'pending_payment'].includes(r.status)
+      );
+
+      const schedEl = document.getElementById('detail-schedule-info');
+      if (reservations.length === 0) {
+        schedEl.className = 'p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-900';
+        schedEl.innerHTML = '<strong>Slot Tersedia:</strong> Belum ada jadwal pemesanan aktif pada slot ini.';
+      } else {
+        schedEl.className = 'p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-950 space-y-1.5';
+        schedEl.innerHTML = `
+          <strong>Jadwal Booking Terdaftar:</strong>
+          ${reservations.map(r => `
+            <div class="flex items-center justify-between text-[11px] pt-1 border-t border-amber-200">
+              <span class="font-mono font-bold">${r.vehicle_plate}</span>
+              <span class="font-mono">${r.start_time.replace('T', ' ')} - ${r.end_time.replace('T', ' ')}</span>
+            </div>
+          `).join('')}
+        `;
+      }
+
+      const bookBtn = document.getElementById('detail-booking-btn');
+      if (activeRes || slot.is_reserved) {
+        bookBtn.className = 'flex-1 py-2.5 rounded-xl bg-amber-200 border border-amber-300 text-amber-900 font-bold text-xs cursor-not-allowed text-center';
+        bookBtn.textContent = '🔒 Sudah Dipesan';
+        bookBtn.onclick = () => {
+          alert(`Slot ${slot.slot_code} sudah dipesan.`);
+        };
+      } else {
+        bookBtn.className = 'flex-1 py-2.5 rounded-xl bg-[#0F382C] hover:bg-[#164E3F] text-white font-bold transition-all shadow-sm';
+        bookBtn.textContent = 'Pesan Slot Ini →';
+        bookBtn.onclick = () => {
+          modal.close();
+          handleBookSlot(slot.id);
+        };
+      }
+
+      modal.showModal();
+    }
+
+    // Update ESP32 hardware bridge status pill
+    function updateIndexESP32Pill() {
+      const pill = document.getElementById('index-esp32-pill');
+      if (!pill) return;
+      const ip = store.getESP32IP();
+      const isActive = !!store._hardwarePolling || !!store._backendPolling;
+      if (ip && isActive) {
+        pill.className = 'hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-300 text-xs font-mono text-emerald-800';
+        pill.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span><span>ESP32 Live: ' + ip + '</span>';
+      } else if (ip) {
+        pill.className = 'hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 border border-amber-300 text-xs font-mono text-amber-800';
+        pill.innerHTML = '<span class="w-2 h-2 rounded-full bg-amber-500"></span><span>ESP32: ' + ip + '</span>';
+      } else {
+        pill.className = 'hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-[#E6E3D8] text-xs font-mono text-slate-500';
+        pill.innerHTML = '<span class="w-2 h-2 rounded-full bg-slate-400"></span><span>⚡ Mode Simulasi</span>';
+      }
+    }
+
+    // Initial load
+    window.addEventListener('DOMContentLoaded', () => {
+      renderSlots();
+      updateNavAuth();
+
+      updateIndexESP32Pill();
+      if (store.getESP32IP()) store.startHardwarePolling(3000);
+    });
+
+    window.addEventListener('smart-parking-data-updated', () => {
+      renderSlots();
+      updateNavAuth();
+      updateIndexESP32Pill();
+    });
+
+    window.addEventListener('smart-parking-esp32-error', event => {
+      console.error(`Koneksi ESP32 bermasalah: ${event.detail}`);
+    });
+
+  </script>
+</body>
+</html>

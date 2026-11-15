@@ -1,0 +1,1597 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Administrator – Smart Parking System</title>
+  
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%230F382C'><rect width='24' height='24' rx='6' fill='%230F382C'/><text x='50%25' y='68%25' font-size='14' font-weight='bold' fill='white' text-anchor='middle'>P</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            forest: { DEFAULT: '#0F382C', hover: '#164E3F', dark: '#0B2820', light: '#E8F2EE' },
+            cream: { DEFAULT: '#FAF8F5', alt: '#F4F2EB' },
+            sand: { DEFAULT: '#E6E3D8', border: '#D5D2C7' }
+          },
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+  
+  <!-- Chart.js for Revenue Reports -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-[#FAF8F5] text-[#192A24] min-h-screen flex flex-col antialiased selection:bg-[#0F382C] selection:text-white">
+
+  <!-- ========================================================================= -->
+  <!-- TOPBAR ADMINISTRATOR                                                      -->
+  <!-- ========================================================================= -->
+  <header class="sticky top-0 z-40 bg-[#0B2820] text-white border-b border-[#164E3F] px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between gap-4">
+    <!-- Brand -->
+    <div class="flex items-center gap-3">
+      <a href="index.html" class="flex items-center gap-2.5 group">
+        <div class="w-10 h-10 rounded-xl bg-[#164E3F] text-emerald-300 flex items-center justify-center font-bold text-base border border-[#2D735E] shadow-inner group-hover:scale-105 transition-transform">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+        </div>
+        <div>
+          <span class="font-serif tracking-wider font-extrabold text-base text-white block leading-none">SMART PARKING</span>
+          <span class="text-[10px] text-emerald-300 tracking-widest font-mono uppercase mt-0.5 block">PORTAL ADMINISTRATOR</span>
+        </div>
+      </a>
+    </div>
+
+    <!-- Center Status Badges -->
+    <div class="hidden lg:flex items-center gap-4 text-xs font-mono">
+      <div id="admin-device-badge" class="flex items-center gap-2 px-3 py-1 rounded-full bg-[#0F382C] border border-[#164E3F] text-emerald-300">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span>BROWSER_LOCAL</span>
+      </div>
+      <div id="admin-heartbeat-badge" class="px-2.5 py-1 rounded-full bg-amber-100 text-amber-900">
+        Menghubungkan database...
+      </div>
+      <!-- ESP32 Live Connection Pill -->
+      <div id="admin-esp32-pill" class="hidden sm:flex items-center gap-1.5 text-xs font-mono font-medium text-slate-600 bg-slate-100 px-3 py-1 rounded-full border border-slate-200">
+        <span class="w-2 h-2 rounded-full bg-slate-400"></span>
+        <span>Mode browser lokal</span>
+      </div>
+    </div>
+
+    <!-- Right Admin Actions -->
+    <div class="flex items-center gap-3">
+      <!-- Reset Demo Data -->
+
+      <!-- Admin Profile & Logout -->
+      <div class="flex items-center gap-3 pl-3 border-l border-[#164E3F]">
+        <div class="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold text-xs" id="admin-avatar">
+          A
+        </div>
+        <div class="hidden sm:block text-left text-xs">
+          <div class="font-bold text-white" id="admin-name">Administrator</div>
+          <div class="text-[10px] text-emerald-300 font-mono">SUPERADMIN</div>
+        </div>
+        <button type="button" onclick="handleAdminLogout()" title="Keluar dari Portal Admin" class="p-2 text-rose-300 hover:text-white hover:bg-rose-900/40 rounded-xl border border-rose-800 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ========================================================================= -->
+  <!-- NAVIGATION TAB BAR                                                        -->
+  <!-- ========================================================================= -->
+  <nav class="bg-white border-b border-[#E6E3D8] px-4 sm:px-6 lg:px-8 overflow-x-auto">
+    <div class="max-w-7xl mx-auto flex items-center gap-2 py-2 text-xs font-semibold">
+      <button type="button" onclick="switchAdminTab('overview')" id="tab-btn-overview" class="px-4 py-2 rounded-xl transition-all bg-[#0F382C] text-white shadow-sm flex items-center gap-2 whitespace-nowrap">
+        <span>📊 Ringkasan Eksekutif & Slot</span>
+      </button>
+      <button type="button" onclick="switchAdminTab('payments')" id="tab-btn-payments" class="px-4 py-2 rounded-xl transition-all text-[#5C6F67] hover:text-[#192A24] hover:bg-[#FAF8F5] flex items-center gap-2 whitespace-nowrap">
+        <span>💳 Verifikasi Pembayaran</span>
+        <span id="tab-pending-badge" class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-100 text-amber-900 border border-amber-300">0</span>
+      </button>
+      <button type="button" onclick="switchAdminTab('reservations')" id="tab-btn-reservations" class="px-4 py-2 rounded-xl transition-all text-[#5C6F67] hover:text-[#192A24] hover:bg-[#FAF8F5] flex items-center gap-2 whitespace-nowrap">
+        <span>🚗 Reservasi & Sesi Parkir</span>
+      </button>
+      <button type="button" onclick="switchAdminTab('reports')" id="tab-btn-reports" class="px-4 py-2 rounded-xl transition-all text-[#5C6F67] hover:text-[#192A24] hover:bg-[#FAF8F5] flex items-center gap-2 whitespace-nowrap">
+        <span>📈 Laporan Keuangan (CSV)</span>
+      </button>
+      <button type="button" onclick="switchAdminTab('logs')" id="tab-btn-logs" class="px-4 py-2 rounded-xl transition-all text-[#5C6F67] hover:text-[#192A24] hover:bg-[#FAF8F5] flex items-center gap-2 whitespace-nowrap">
+        <span>📡 Log Telemetri Sensor</span>
+      </button>
+      <button type="button" onclick="switchAdminTab('settings')" id="tab-btn-settings" class="px-4 py-2 rounded-xl transition-all text-[#5C6F67] hover:text-[#192A24] hover:bg-[#FAF8F5] flex items-center gap-2 whitespace-nowrap">
+        <span>⚙️ Sistem & Pengguna</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ========================================================================= -->
+  <!-- MAIN ADMIN VIEWPORT                                                       -->
+  <!-- ========================================================================= -->
+  <main class="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto space-y-8">
+
+    <!-- Admin Notification Toast -->
+    <div id="admin-toast" class="hidden p-4 rounded-2xl text-xs font-semibold flex items-center justify-between border"></div>
+    <div id="admin-arrival-identity-alerts" class="hidden"></div>
+    <div id="admin-payment-arrival-alerts" class="hidden"></div>
+
+    <!-- ===================================================================== -->
+    <!-- TAB 1: OVERVIEW & 4-SLOT TELEMETRY                                    -->
+    <!-- ===================================================================== -->
+    <div id="view-overview" class="space-y-8">
+      
+      <!-- 8-Card KPI Grid (Executive Telemetry) -->
+      <div>
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-base font-bold text-[#192A24] tracking-tight">Metrik Operasional & Telemetri Real-Time</h2>
+          <span class="text-xs font-mono text-[#5C6F67]">Auto-refresh: 3s</span>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4" id="kpi-grid">
+          <!-- Injected by JS: 8 cards -->
+        </div>
+      </div>
+
+      <!-- Real-Time 4-Slot Telemetry Cards (A01 - A04) -->
+      <div class="p-6 sm:p-8 rounded-3xl bg-white border border-[#E6E3D8] shadow-sm">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-[#E6E3D8] mb-6 gap-2">
+          <div>
+            <h3 class="font-bold text-sm text-[#192A24] flex items-center gap-2">
+              <span class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span>Telemetri Sensor Optik 4 Slot Parkir (A01 - A04)</span>
+            </h3>
+            <p class="text-xs text-[#5C6F67] mt-0.5">
+              Indikator: <span class="text-rose-600 font-bold">Merah = Kosong</span>, <span class="text-amber-600 font-bold">Kuning = Direservasi</span>, <span class="text-emerald-600 font-bold">Hijau = Terisi</span>, <span class="text-slate-500 font-bold">Abu-abu = Offline</span>.
+            </p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button type="button" onclick="renderAllAdminData()" class="px-3 py-1.5 rounded-xl border border-[#D5D2C7] bg-[#FAF8F5] text-xs font-semibold text-[#0F382C] hover:bg-[#F4F2EB] flex items-center gap-1.5 transition-colors">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+              <span>Refresh</span>
+            </button>
+          </div>
+        </div>
+
+        <div id="admin-slots-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <!-- Injected by JS -->
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TAB 2: PUSAT VERIFIKASI PEMBAYARAN                                    -->
+    <!-- ===================================================================== -->
+    <div id="view-payments" class="hidden space-y-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-base font-bold text-[#192A24] tracking-tight">Pusat Verifikasi Pembayaran Transfer</h2>
+          <p class="text-xs text-[#5C6F67]">Periksa keaslian bukti transfer bank pengguna dan setujui atau tolak transaksi.</p>
+        </div>
+      </div>
+
+      <div id="payments-queue-container">
+        <!-- Injected by JS -->
+      </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TAB 3: MANAJEMEN RESERVASI & SESI PARKIR                              -->
+    <!-- ===================================================================== -->
+    <div id="view-reservations" class="hidden space-y-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-base font-bold text-[#192A24] tracking-tight">Manajemen Reservasi & Sesi Parkir</h2>
+          <p class="text-xs text-[#5C6F67]">Daftar seluruh pemesanan slot parkir dari semua pengguna.</p>
+        </div>
+
+        <!-- Search & Filter Controls -->
+        <div class="flex flex-wrap items-center gap-2">
+          <input type="text" id="filter-rsv-search" oninput="renderReservationsTable()" placeholder="Cari Plat / Kode..." class="px-3.5 py-2 rounded-xl border border-[#D5D2C7] bg-white text-xs font-mono focus:outline-none focus:ring-1 focus:ring-[#0F382C]">
+          <select id="filter-rsv-status" onchange="renderReservationsTable()" class="px-3 py-2 rounded-xl border border-[#D5D2C7] bg-white text-xs font-semibold text-[#192A24] focus:outline-none">
+            <option value="all">Semua Status</option>
+            <option value="pending_payment">Menunggu Pembayaran</option>
+            <option value="waiting_verification">Menunggu Verifikasi</option>
+            <option value="confirmed">Lunas / Siap Parkir</option>
+            <option value="active">Sedang Parkir (Aktif)</option>
+            <option value="completed">Selesai</option>
+            <option value="cancelled">Dibatalkan</option>
+            <option value="expired">Kedaluwarsa</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="p-6 rounded-3xl bg-white border border-[#E6E3D8] shadow-sm overflow-x-auto">
+        <table class="w-full text-xs text-left">
+          <thead class="bg-[#FAF8F5] text-[#5C6F67] font-mono uppercase text-[11px] border-b border-[#E6E3D8]">
+            <tr>
+              <th class="py-3 px-4">Kode Reservasi</th>
+              <th class="py-3 px-4">Pengguna</th>
+              <th class="py-3 px-4">Slot</th>
+              <th class="py-3 px-4">Plat Kendaraan</th>
+              <th class="py-3 px-4">Jadwal Parkir</th>
+              <th class="py-3 px-4">Tarif</th>
+              <th class="py-3 px-4">Status</th>
+              <th class="py-3 px-4">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="admin-reservations-tbody" class="divide-y divide-[#E6E3D8]">
+            <!-- Injected by JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <div class="space-y-3">
+        <div>
+          <h3 class="text-sm font-bold text-[#192A24]">Riwayat Sesi Parkir</h3>
+          <p class="text-xs text-[#5C6F67]">Sesi aktif harus di-checkout terlebih dahulu; menghapus sesi selesai tidak menghapus reservasinya.</p>
+        </div>
+        <div class="p-6 rounded-3xl bg-white border border-[#E6E3D8] shadow-sm overflow-x-auto">
+          <table class="w-full text-xs text-left">
+            <thead class="bg-[#FAF8F5] text-[#5C6F67] font-mono uppercase text-[11px] border-b border-[#E6E3D8]">
+              <tr>
+                <th class="py-3 px-4">Kode Reservasi</th>
+                <th class="py-3 px-4">Slot / Plat</th>
+                <th class="py-3 px-4">Check-in</th>
+                <th class="py-3 px-4">Check-out</th>
+                <th class="py-3 px-4">Status Sesi</th>
+                <th class="py-3 px-4">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="admin-parking-sessions-tbody" class="divide-y divide-[#E6E3D8]">
+              <!-- Injected by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TAB 4: LAPORAN KEUANGAN & CHART.JS                                    -->
+    <!-- ===================================================================== -->
+    <div id="view-reports" class="hidden space-y-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-base font-bold text-[#192A24] tracking-tight">Laporan Keuangan & Analisis Pendapatan</h2>
+          <p class="text-xs text-[#5C6F67]">Akumulasi pendapatan resmi dari pembayaran yang telah disetujui (FR-REP-001 - FR-REP-005).</p>
+        </div>
+
+        <button type="button" onclick="exportRevenueCSV()" class="px-5 py-2.5 rounded-xl bg-[#0F382C] hover:bg-[#164E3F] text-white font-bold text-xs flex items-center gap-2 shadow-sm transition-all">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+          <span>Ekspor ke File CSV</span>
+        </button>
+      </div>
+
+      <!-- Financial Metric Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-4 gap-4" id="revenue-metrics-cards">
+        <!-- Injected by JS -->
+      </div>
+
+      <!-- Chart.js Graph -->
+      <div class="p-6 sm:p-8 rounded-3xl bg-white border border-[#E6E3D8] shadow-sm">
+        <h3 class="font-bold text-sm text-[#192A24] mb-4">Grafik Tren Pendapatan Harian (IDR)</h3>
+        <div class="h-72 w-full">
+          <canvas id="revenueChartCanvas"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TAB 5: LOG TELEMETRI SENSOR ESP32                                     -->
+    <!-- ===================================================================== -->
+    <div id="view-logs" class="hidden space-y-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-base font-bold text-[#192A24] tracking-tight">Log Telemetri Sensor ESP32</h2>
+          <p class="text-xs text-[#5C6F67]">Riwayat transmisi sensor ADC photodiode dan status buzzer mikrokontroler.</p>
+        </div>
+      </div>
+
+      <div class="p-6 rounded-3xl bg-white border border-[#E6E3D8] shadow-sm overflow-x-auto">
+        <table class="w-full text-xs text-left">
+          <thead class="bg-[#FAF8F5] text-[#5C6F67] font-mono uppercase text-[11px] border-b border-[#E6E3D8]">
+            <tr>
+              <th class="py-3 px-4">Waktu Rekam</th>
+              <th class="py-3 px-4">Slot</th>
+              <th class="py-3 px-4">Nilai ADC Sensor</th>
+              <th class="py-3 px-4">Status Fisik Terdeteksi</th>
+              <th class="py-3 px-4">Status Buzzer ESP32</th>
+            </tr>
+          </thead>
+          <tbody id="admin-logs-tbody" class="divide-y divide-[#E6E3D8]">
+            <!-- Injected by JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TAB 6: PENGATURAN SISTEM & PENGGUNA                                   -->
+    <!-- ===================================================================== -->
+    <div id="view-settings" class="hidden space-y-6">
+      <div>
+        <h2 class="text-base font-bold text-[#192A24] tracking-tight">Pengaturan Sistem & Pengguna Terdaftar</h2>
+        <p class="text-xs text-[#5C6F67]">Reservasi tersimpan di browser ini; sensor ESP32 dapat dihubungkan langsung lewat Wi-Fi lokal.</p>
+        <p class="mt-2 text-xs text-amber-700">Mode demo lokal tidak menyediakan autentikasi aman atau verifikasi pembayaran sungguhan.</p>
+      </div>
+
+      <!-- ================================================================= -->
+      <!-- ESP32 HARDWARE BRIDGE CONFIGURATION PANEL                         -->
+      <!-- ================================================================= -->
+      <div class="p-6 rounded-3xl bg-[#0B2820] border border-[#1A4035] shadow-xl text-white space-y-5">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-emerald-900/60 flex items-center justify-center">
+              <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/></svg>
+            </div>
+            <div>
+              <h3 class="font-bold text-sm text-white">Koneksi Hardware ESP32</h3>
+              <p class="text-[11px] text-emerald-400 font-mono">REST API Bridge • Port 80 • CORS Enabled</p>
+            </div>
+          </div>
+          <!-- Live Status Badge -->
+          <div id="esp32-bridge-status-badge" class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-700/50 border border-slate-600 text-xs font-mono font-semibold text-slate-400">
+            <span class="w-2 h-2 rounded-full bg-slate-500"></span>
+            <span id="esp32-bridge-status-text">Tidak Terhubung</span>
+          </div>
+        </div>
+
+        <!-- Divider -->
+        <div class="border-t border-white/10"></div>
+
+        <!-- Two-column grid: IP config | Status info -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+
+          <!-- Left: IP Address + Connect Controls -->
+          <div class="space-y-3">
+            <label class="block text-[11px] font-semibold text-emerald-400 uppercase tracking-wider">Alamat IP ESP32 di Jaringan Lokal</label>
+            <div class="flex gap-2">
+              <input
+                type="text"
+                id="esp32-ip-input"
+                placeholder="Contoh: 192.168.1.50"
+                class="flex-1 px-3.5 py-2.5 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 font-mono text-sm focus:outline-none focus:border-emerald-400 focus:bg-white/15 transition-colors"
+              >
+              <button
+                type="button"
+                onclick="esp32TestConnection()"
+                title="Uji koneksi ke ESP32"
+                class="px-3 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white/70 hover:text-white transition-colors"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+              </button>
+            </div>
+            <div class="flex gap-2">
+              <button
+                type="button"
+                onclick="esp32ConnectAndPoll()"
+                class="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition-colors shadow-sm flex items-center justify-center gap-1.5"
+              >
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M12 5l7 7-7 7"/></svg>
+                Simpan & Hubungkan
+              </button>
+              <button
+                type="button"
+                onclick="esp32Disconnect()"
+                class="flex-1 py-2.5 rounded-xl bg-rose-800/60 hover:bg-rose-700/80 text-rose-300 hover:text-white font-bold text-xs border border-rose-700/50 transition-colors flex items-center justify-center gap-1.5"
+              >
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                Putuskan Koneksi
+              </button>
+            </div>
+          </div>
+
+          <!-- Right: Threshold + Live Info -->
+          <div class="space-y-3">
+            <label class="block text-[11px] font-semibold text-emerald-400 uppercase tracking-wider">Threshold ADC Photodiode (0 – 4095)</label>
+            <div class="flex gap-2">
+              <input
+                type="number"
+                id="esp32-threshold-input"
+                placeholder="2000"
+                min="0" max="4095"
+                value="2000"
+                class="flex-1 px-3.5 py-2.5 rounded-xl bg-white/10 border border-white/20 text-white font-mono text-sm focus:outline-none focus:border-emerald-400 focus:bg-white/15 transition-colors"
+              >
+              <button
+                type="button"
+                onclick="esp32ApplyThreshold()"
+                class="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold text-xs transition-colors whitespace-nowrap"
+              >
+                Terapkan ke ESP32
+              </button>
+            </div>
+            <!-- Last sync / polling info -->
+            <div class="p-3 rounded-xl bg-black/30 border border-white/10 space-y-1 text-[11px] font-mono">
+              <div class="flex items-center justify-between text-white/60">
+                <span>Status Polling:</span>
+                <span id="esp32-polling-status" class="text-slate-400">Tidak aktif</span>
+              </div>
+              <div class="flex items-center justify-between text-white/60">
+                <span>Sinkronisasi Terakhir:</span>
+                <span id="esp32-last-sync" class="text-slate-400">—</span>
+              </div>
+              <div class="flex items-center justify-between text-white/60">
+                <span>IP Tersimpan:</span>
+                <span id="esp32-saved-ip-display" class="text-emerald-400">—</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Test Connection JSON Response -->
+        <div id="esp32-test-result-wrapper" class="hidden">
+          <div class="border-t border-white/10 pt-4">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider">Data sensor lokal</span>
+              <button type="button" onclick="document.getElementById('esp32-test-result-wrapper').classList.add('hidden')" class="text-white/40 hover:text-white/70 text-xs">✕ Tutup</button>
+            </div>
+            <pre id="esp32-test-result" class="p-3 rounded-xl bg-black/40 border border-white/10 text-[11px] text-emerald-300 font-mono overflow-x-auto whitespace-pre-wrap max-h-48"></pre>
+          </div>
+        </div>
+
+        <!-- Buzzer Test Row -->
+        <div class="border-t border-white/10 pt-4">
+          <span class="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider block mb-3">Simulasi buzzer browser</span>
+          <div class="grid grid-cols-3 gap-2">
+            <button type="button" onclick="esp32TestBuzzer('beep')" class="py-2.5 rounded-xl bg-white/10 hover:bg-emerald-800/60 border border-white/20 text-white font-semibold text-xs transition-colors flex flex-col items-center gap-1">
+              <span class="text-base">🔊</span>
+              <span>1800Hz Masuk</span>
+            </button>
+            <button type="button" onclick="esp32TestBuzzer('success')" class="py-2.5 rounded-xl bg-white/10 hover:bg-emerald-800/60 border border-white/20 text-white font-semibold text-xs transition-colors flex flex-col items-center gap-1">
+              <span class="text-base">🎵</span>
+              <span>Chime Valid</span>
+            </button>
+            <button type="button" onclick="esp32TestBuzzer('alert')" class="py-2.5 rounded-xl bg-white/10 hover:bg-rose-900/60 border border-white/20 text-rose-300 hover:text-white font-semibold text-xs transition-colors flex flex-col items-center gap-1">
+              <span class="text-base">⚠️</span>
+              <span>2400Hz Alarm</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Info Note -->
+        <div class="p-3 rounded-xl bg-emerald-900/30 border border-emerald-800/50 text-[11px] text-emerald-300 leading-relaxed">
+          <strong class="font-semibold text-emerald-200">💡 Cara Penggunaan:</strong>
+          Upload firmware ke ESP32 → Buka Serial Monitor (115200 baud) untuk melihat IP yang diperoleh DHCP → Masukkan IP tersebut di atas → Klik "Simpan &amp; Hubungkan". Website akan otomatis polling status sensor setiap 3 detik dari perangkat fisik.
+        </div>
+      </div>
+
+      <!-- ================================================================= -->
+      <!-- TARIF & BANK + USERS (original layout)                            -->
+      <!-- ================================================================= -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Settings Form -->
+        <div class="p-6 rounded-3xl bg-white border border-[#E6E3D8] shadow-sm space-y-4 text-xs">
+          <h3 class="font-bold text-sm text-[#192A24]">Konfigurasi Tarif & Bank BCA</h3>
+          <div class="space-y-3">
+            <div>
+              <label class="block font-semibold text-[#5C6F67] mb-1">Tarif Parkir Mobil (per Jam)</label>
+              <input type="text" readonly value="Rp 5.000 / jam" class="w-full px-3.5 py-2.5 rounded-xl border border-[#D5D2C7] bg-[#FAF8F5] font-mono font-bold">
+            </div>
+            <div>
+              <label class="block font-semibold text-[#5C6F67] mb-1">Bank Penerima</label>
+              <input type="text" readonly value="Bank Central Asia (BCA)" class="w-full px-3.5 py-2.5 rounded-xl border border-[#D5D2C7] bg-[#FAF8F5]">
+            </div>
+            <div>
+              <label class="block font-semibold text-[#5C6F67] mb-1">Nomor Rekening</label>
+              <input type="text" readonly value="8830-1928-100 (a.n. Smart Parking System)" class="w-full px-3.5 py-2.5 rounded-xl border border-[#D5D2C7] bg-[#FAF8F5] font-mono font-bold text-emerald-800">
+            </div>
+            <div>
+              <label class="block font-semibold text-[#5C6F67] mb-1">Ambang Batas (Threshold) ADC Photodiode</label>
+              <input type="text" readonly value="2000 ADC (&lt; 2000 = Kendaraan Terdeteksi)" class="w-full px-3.5 py-2.5 rounded-xl border border-[#D5D2C7] bg-[#FAF8F5] font-mono">
+            </div>
+          </div>
+        </div>
+
+        <!-- Users Table -->
+        <div class="p-6 rounded-3xl bg-white border border-[#E6E3D8] shadow-sm space-y-4">
+          <h3 class="font-bold text-sm text-[#192A24]">Daftar Pengguna Sistem (Database Users)</h3>
+          <div class="overflow-x-auto text-xs">
+            <table class="w-full text-left">
+              <thead class="bg-[#FAF8F5] text-[#5C6F67] font-mono uppercase text-[10px] border-b border-[#E6E3D8]">
+                <tr>
+                  <th class="py-2.5 px-3">Nama</th>
+                  <th class="py-2.5 px-3">Email</th>
+                  <th class="py-2.5 px-3">Role</th>
+                </tr>
+              </thead>
+              <tbody id="admin-users-tbody" class="divide-y divide-[#E6E3D8]">
+                <!-- Injected by JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: PREVIEW STRUK & APPROVE/REJECT PAYMENT                             -->
+  <!-- ========================================================================= -->
+  <dialog id="modal-payment-preview" class="w-full max-w-lg p-0 rounded-2xl overflow-hidden shadow-2xl border-none">
+    <div class="bg-[#0F382C] text-white p-6 flex items-center justify-between">
+      <div>
+        <h3 class="font-bold text-base">Verifikasi Bukti Pembayaran Transfer</h3>
+        <p class="text-xs text-[#A2C7B8] mt-0.5" id="verif-res-code">RSV-XXXX</p>
+      </div>
+      <button type="button" onclick="document.getElementById('modal-payment-preview').close()" class="text-white/70 hover:text-white p-1">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <div class="p-6 bg-white space-y-4 text-xs">
+      <input type="hidden" id="verif-payment-id">
+
+      <div class="p-4 rounded-xl bg-[#FAF8F5] border border-[#E6E3D8] grid grid-cols-2 gap-3">
+        <div>
+          <span class="text-[#5C6F67] block">Pengguna:</span>
+          <strong id="verif-user-name" class="text-slate-800 text-sm">...</strong>
+        </div>
+        <div>
+          <span class="text-[#5C6F67] block">Total Tagihan:</span>
+          <strong id="verif-amount" class="text-emerald-800 font-mono text-sm">Rp 10.000</strong>
+        </div>
+        <div>
+          <span class="text-[#5C6F67] block">Slot & Plat:</span>
+          <span id="verif-slot-plate" class="font-mono font-bold text-slate-800">A01 • B 1234 XYZ</span>
+        </div>
+        <div>
+          <span class="text-[#5C6F67] block">Waktu Upload:</span>
+          <span id="verif-time" class="font-mono text-slate-600">...</span>
+        </div>
+      </div>
+
+      <!-- Receipt Image Preview -->
+      <div class="p-3 rounded-2xl bg-slate-900 text-center">
+        <img id="verif-slip-img" src="" class="max-h-56 mx-auto rounded-lg border border-slate-700 shadow-lg object-contain">
+      </div>
+
+      <div class="pt-2 flex items-center gap-3">
+        <button type="button" onclick="openRejectModal()" class="flex-1 py-3 rounded-xl border border-rose-300 text-rose-700 hover:bg-rose-50 font-bold transition-colors">
+          Tolak Pembayaran...
+        </button>
+        <button type="button" onclick="approveCurrentPayment()" class="flex-1 py-3 rounded-xl bg-[#0F382C] hover:bg-[#164E3F] text-white font-bold transition-all shadow-md">
+          ✓ Setujui Pembayaran
+        </button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: ALASAN PENOLAKAN PEMBAYARAN                                        -->
+  <!-- ========================================================================= -->
+  <dialog id="modal-reject-reason" class="w-full max-w-md p-0 rounded-2xl overflow-hidden shadow-2xl border-none">
+    <div class="bg-rose-950 text-white p-5 flex items-center justify-between border-b border-rose-800">
+      <h3 class="font-bold text-sm">Pilih Alasan Penolakan Transfer</h3>
+      <button type="button" onclick="document.getElementById('modal-reject-reason').close()" class="text-white/70 hover:text-white p-1">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <div class="p-6 bg-white space-y-4 text-xs">
+      <div class="space-y-2">
+        <label class="flex items-center gap-2 p-2.5 rounded-xl border hover:bg-slate-50 cursor-pointer">
+          <input type="radio" name="reject-reason" value="Gambar struk buram / tidak terbaca jelas" checked class="text-[#0F382C]">
+          <span>Gambar struk transfer buram / tidak terbaca</span>
+        </label>
+        <label class="flex items-center gap-2 p-2.5 rounded-xl border hover:bg-slate-50 cursor-pointer">
+          <input type="radio" name="reject-reason" value="Nominal transfer tidak sesuai tagihan" class="text-[#0F382C]">
+          <span>Nominal transfer tidak sesuai dengan jumlah tagihan</span>
+        </label>
+        <label class="flex items-center gap-2 p-2.5 rounded-xl border hover:bg-slate-50 cursor-pointer">
+          <input type="radio" name="reject-reason" value="Rekening tujuan transfer bukan BCA Smart Parking" class="text-[#0F382C]">
+          <span>Rekening tujuan salah (Bukan BCA Smart Parking)</span>
+        </label>
+        <label class="flex items-center gap-2 p-2.5 rounded-xl border hover:bg-slate-50 cursor-pointer">
+          <input type="radio" name="reject-reason" value="Dana belum masuk mutasi rekening BCA kami" class="text-[#0F382C]">
+          <span>Dana belum masuk ke mutasi rekening kami</span>
+        </label>
+      </div>
+
+      <div class="pt-2 flex items-center justify-end gap-3">
+        <button type="button" onclick="document.getElementById('modal-reject-reason').close()" class="px-4 py-2 rounded-xl border border-slate-300 font-semibold text-slate-700">
+          Batal
+        </button>
+        <button type="button" onclick="confirmRejectPayment()" class="px-5 py-2 rounded-xl bg-rose-700 hover:bg-rose-800 text-white font-bold">
+          Konfirmasi Penolakan
+        </button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- ========================================================================= -->
+  <!-- SCRIPTS & ADMIN CONTROLLER                                                -->
+  <!-- ========================================================================= -->
+  <script src="js/audio.js"></script>
+  <script src="js/data.js"></script>
+  <script>
+    const store = window.smartParkingStore;
+
+    // 1. Role Protection (FR-AUTH-003): Require role 'admin'
+    const currentAdmin = store.requireAuth('admin', 'login-admin.html');
+
+    let activePaymentForAction = null;
+    let revenueChartInstance = null;
+
+    if (currentAdmin) {
+      document.getElementById('admin-name').textContent = currentAdmin.name;
+      document.getElementById('admin-avatar').textContent = currentAdmin.name.charAt(0);
+    }
+
+    async function handleAdminLogout() {
+      await store.logout('admin');
+      window.location.href = 'login-admin.html';
+    }
+
+    let _adminToastTimeout = null;
+    function updateAdminDatabaseStatus(isOnline) {
+      const badge = document.getElementById('admin-heartbeat-badge');
+      if (!badge) return;
+      badge.className = isOnline
+        ? 'px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-900'
+        : 'px-2.5 py-1 rounded-full bg-rose-100 text-rose-900';
+      badge.textContent = isOnline ? 'Database tersinkron' : 'Database offline - data lokal';
+    }
+
+    function showAdminToast(msg, isSuccess = true, autoHide = true) {
+      const toast = document.getElementById('admin-toast');
+      if (!toast) return;
+      if (_adminToastTimeout) clearTimeout(_adminToastTimeout);
+      toast.className = `p-4 rounded-2xl text-xs font-semibold flex items-center justify-between border shadow-md ${isSuccess ? 'bg-emerald-50 text-emerald-900 border-emerald-300' : 'bg-rose-50 text-rose-900 border-rose-300'}`;
+      toast.innerHTML = `
+        <span class="flex items-center gap-2">${msg}</span>
+        <button type="button" onclick="this.parentElement.classList.add('hidden')" class="text-slate-500 hover:text-slate-800 font-bold text-base px-2">&times;</button>
+      `;
+      toast.classList.remove('hidden');
+      if (autoHide) {
+        _adminToastTimeout = setTimeout(() => toast.classList.add('hidden'), 6000);
+      }
+    }
+
+    // --- TAB SWITCHER ---
+    function switchAdminTab(tabName) {
+      const tabs = ['overview', 'payments', 'reservations', 'reports', 'logs', 'settings'];
+      tabs.forEach(t => {
+        const view = document.getElementById(`view-${t}`);
+        const btn = document.getElementById(`tab-btn-${t}`);
+        if (view) view.classList.toggle('hidden', t !== tabName);
+        if (btn) {
+          if (t === tabName) {
+            btn.className = 'px-4 py-2 rounded-xl transition-all bg-[#0F382C] text-white shadow-sm flex items-center gap-2 whitespace-nowrap';
+          } else {
+            btn.className = 'px-4 py-2 rounded-xl transition-all text-[#5C6F67] hover:text-[#192A24] hover:bg-[#FAF8F5] flex items-center gap-2 whitespace-nowrap';
+          }
+        }
+      });
+
+      if (tabName === 'reports') {
+        setTimeout(initRevenueChart, 50);
+      }
+    }
+
+    // --- RENDER 8-CARD EXECUTIVE KPI GRID ---
+    function renderKPIGrid() {
+      const container = document.getElementById('kpi-grid');
+      if (!container) return;
+
+      const slots = store.getSlots();
+      const reservations = store.getReservations();
+      const payments = store.getPayments();
+      const rev = store.getRevenueMetrics('all');
+
+      const totalSlots = slots.length;
+      const occupiedPhysical = slots.filter(s => s.is_occupied).length;
+      const emptyPhysical = slots.filter(s => !s.is_occupied && s.physical_status !== 'unknown').length;
+      const scheduledBooked = reservations.filter(r => ['confirmed', 'waiting_verification', 'active'].includes(r.status)).length;
+      const pendingPayments = payments.filter(p => p.status === 'pending').length;
+      const activeSessions = reservations.filter(r => r.status === 'active').length;
+
+      // Update badge in tab
+      const tabBadge = document.getElementById('tab-pending-badge');
+      if (tabBadge) tabBadge.textContent = pendingPayments;
+
+      const kpis = [
+        { label: 'Total Kapasitas', val: `${totalSlots} Slot`, color: 'text-slate-900', bg: 'bg-white', border: 'border-[#E6E3D8]' },
+        { label: '🔴 Slot Kosong Fisik', val: `${emptyPhysical}`, color: 'text-rose-700', bg: 'bg-rose-50/50', border: 'border-rose-200' },
+        { label: '🟢 Slot Terisi Fisik', val: `${occupiedPhysical}`, color: 'text-emerald-700', bg: 'bg-emerald-50/50', border: 'border-emerald-200' },
+        { label: '📅 Booking Terjadwal', val: `${scheduledBooked}`, color: 'text-amber-800', bg: 'bg-amber-50/50', border: 'border-amber-200' },
+        { label: '💳 Menunggu Verifikasi', val: `${pendingPayments}`, color: pendingPayments > 0 ? 'text-blue-800' : 'text-slate-700', bg: pendingPayments > 0 ? 'bg-blue-50' : 'bg-white', border: pendingPayments > 0 ? 'border-blue-300' : 'border-[#E6E3D8]' },
+        { label: '🚗 Sesi Parkir Aktif', val: `${activeSessions}`, color: 'text-[#0F382C]', bg: 'bg-white', border: 'border-[#E6E3D8]' },
+        { label: '💵 Pendapatan Hari Ini', val: `Rp ${rev.today.toLocaleString('id-ID')}`, color: 'text-emerald-800', bg: 'bg-white', border: 'border-[#E6E3D8]' },
+        { label: '💰 Total Akumulasi', val: `Rp ${rev.total.toLocaleString('id-ID')}`, color: 'text-[#0F382C]', bg: 'bg-white', border: 'border-[#E6E3D8]' }
+      ];
+
+      container.innerHTML = kpis.map(k => `
+        <div class="p-4 rounded-2xl ${k.bg} border ${k.border} shadow-sm flex flex-col justify-between">
+          <span class="text-[11px] font-semibold text-[#5C6F67] block">${k.label}</span>
+          <span class="text-xl font-mono font-extrabold ${k.color} mt-1.5 block">${k.val}</span>
+        </div>
+      `).join('');
+    }
+
+    // --- RENDER 4-SLOT MONITORING GRID ---
+    function renderAdminSlots() {
+      const container = document.getElementById('admin-slots-container');
+      if (!container) return;
+
+      const slots = store.getSlots();
+
+      container.innerHTML = slots.map(slot => {
+        const isOccupied = slot.is_occupied;
+        const isOffline = slot.physical_status === 'unknown';
+        const activeRes = store.getActiveReservationForSlot(slot.id);
+
+        let badgeBg, badgeText, statusLabel, ledColor, borderColor, cardBg;
+        if (isOffline) {
+          badgeBg = 'bg-slate-100 border border-slate-300';
+          badgeText = 'text-slate-700';
+          statusLabel = 'UNKNOWN / OFFLINE';
+          ledColor = 'bg-slate-400';
+          borderColor = 'border-slate-300';
+          cardBg = 'bg-white';
+        } else if (activeRes) {
+          // KETIKA SLOT SUDAH DI RESERVASI: Berubah jadi warna KUNING & tampilkan nomor plat mobil
+          badgeBg = 'bg-amber-100 border border-amber-300';
+          badgeText = 'text-amber-900';
+          statusLabel = 'SUDAH DI RESERVASI';
+          ledColor = 'bg-amber-500 animate-pulse';
+          borderColor = 'border-amber-400';
+          cardBg = 'bg-amber-50/50';
+        } else if (isOccupied) {
+          badgeBg = 'bg-emerald-50 border border-emerald-300';
+          badgeText = 'text-emerald-800';
+          statusLabel = 'TERISI (MOBIL ADA)';
+          ledColor = 'bg-emerald-500 animate-pulse';
+          borderColor = 'border-emerald-300';
+          cardBg = 'bg-white';
+        } else {
+          badgeBg = 'bg-rose-50 border border-rose-300';
+          badgeText = 'text-rose-800';
+          statusLabel = 'KOSONG (TERSEDIA)';
+          ledColor = 'bg-rose-500';
+          borderColor = 'border-rose-300';
+          cardBg = 'bg-white';
+        }
+
+        return `
+          <div class="${cardBg} rounded-3xl p-5 border-2 ${borderColor} shadow-sm flex flex-col justify-between transition-all">
+            <div>
+              <div class="flex items-center justify-between pb-3 border-b border-[#E6E3D8]">
+                <div class="flex items-center gap-2">
+                  <span class="w-3.5 h-3.5 rounded-full ${ledColor}"></span>
+                  <span class="font-mono text-2xl font-black text-[#192A24]">${slot.slot_code}</span>
+                </div>
+                <span class="text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full ${badgeBg} ${badgeText}">
+                  ${statusLabel}
+                </span>
+              </div>
+
+              ${activeRes ? `
+                <!-- Plat Mobil Direservasi Banner (Kuning) -->
+                <div class="mt-3 p-2.5 rounded-2xl bg-amber-100/90 border border-amber-300 text-amber-950 flex items-center justify-between shadow-xs">
+                  <div class="flex items-center gap-2">
+                    <span class="text-base">🚗</span>
+                    <div>
+                      <span class="text-[9px] uppercase font-bold text-amber-800 tracking-wider block">Direservasi Oleh:</span>
+                      <span class="font-mono text-xs font-black text-amber-950">${activeRes.vehicle_plate}</span>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-1.5">
+                    <span class="text-[9px] font-mono font-bold px-2 py-0.5 rounded bg-amber-200 text-amber-900 border border-amber-400">
+                      ${activeRes.status.toUpperCase()}
+                    </span>
+                    <button type="button" onclick="adminCardCheckout(${activeRes.id}, '${slot.slot_code}')" class="text-[10px] px-2 py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded font-bold transition-all shadow-xs" title="Selesaikan Parkir & Bebaskan Slot">
+                      Selesai
+                    </button>
+                  </div>
+                </div>
+
+                ${slot.is_occupied && !activeRes.arrival_confirmed_at ? `
+                  <div class="mt-2 p-2 rounded-xl bg-amber-200 border-2 border-amber-400 text-amber-950 flex items-center justify-between">
+                    <div class="flex items-center gap-1.5">
+                      <span>🚗</span>
+                      <span class="text-[10px] font-extrabold text-amber-950">Menunggu konfirmasi pemilik reservasi</span>
+                    </div>
+                  </div>
+                ` : ''}
+              ` : ''}
+
+              <div class="py-3.5 space-y-2 text-xs">
+                <div class="flex items-center justify-between">
+                  <span class="text-[#5C6F67]">Sensor Optik:</span>
+                  <strong class="font-mono text-slate-800">${slot.sensor_value} ADC</strong>
+                </div>
+                <div class="flex items-center justify-between">
+                  <span class="text-[#5C6F67]">Kondisi Sensor:</span>
+                  <span class="font-semibold ${slot.sensor_value < 2000 ? 'text-emerald-700' : 'text-slate-600'}">
+                    ${slot.sensor_value < 2000 ? 'Cahaya Terhalang' : 'Terkena Cahaya'}
+                  </span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <span class="text-[#5C6F67]">Status Jadwal:</span>
+                  <span class="font-bold text-xs ${activeRes ? 'text-amber-900 font-bold' : 'text-emerald-700'}">
+                    ${activeRes ? `Booked (${activeRes.vehicle_plate})` : 'Tersedia'}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function adminCardCheckout(resId, slotCode) {
+      if (confirm(`Selesaikan parkir dan lepaskan slot ${slotCode} sekarang? Slot akan kembali Kosong (Tersedia).`)) {
+        try {
+          await store.checkoutSession(resId);
+          showAdminToast(`Sesi parkir slot ${slotCode} telah diselesaikan.`, true);
+        } catch (error) {
+          showAdminToast(error.message, false);
+        }
+      }
+    }
+
+    function quickToggleSlot(slotCode, makeOccupied) {
+      showAdminToast(`Status Slot ${slotCode} hanya dapat diperbarui oleh sensor ESP32.`, false);
+    }
+
+    // --- RENDER PAYMENT VERIFICATION QUEUE ---
+    function renderPaymentsQueue() {
+      const container = document.getElementById('payments-queue-container');
+      if (!container) return;
+
+      const payments = store.getPayments().filter(p =>
+        p.status === 'pending' && store.getReservationById(p.reservation_id)?.status !== 'expired'
+      );
+      if (payments.length === 0) {
+        container.innerHTML = `
+          <div class="p-8 rounded-3xl bg-white border border-[#E6E3D8] text-center space-y-3">
+            <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center justify-center mx-auto text-xl">
+              ✓
+            </div>
+            <h3 class="font-bold text-base text-[#192A24]">Semua Pembayaran Telah Diverifikasi</h3>
+            <p class="text-xs text-[#5C6F67]">Tidak ada antrean transfer bank yang menunggu persetujuan saat ini.</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = `
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          ${payments.map(p => {
+            const rsv = store.getReservationById(p.reservation_id);
+            const user = rsv ? store.getUserById(rsv.user_id) : null;
+            const slot = rsv ? store.getSlotById(rsv.parking_slot_id) : null;
+
+            return `
+              <div class="p-6 rounded-3xl bg-white border border-[#E6E3D8] shadow-sm space-y-4 flex flex-col justify-between">
+                <div>
+                  <div class="flex items-center justify-between pb-3 border-b border-[#E6E3D8]">
+                    <span class="font-mono font-bold text-xs text-[#0F382C]">${rsv ? rsv.reservation_code : 'RSV-XXXX'}</span>
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-100 text-amber-900 border border-amber-300">
+                      MENUNGGU PERSETUJUAN
+                    </span>
+                  </div>
+
+                  <div class="py-3 space-y-2 text-xs">
+                    <div class="flex items-center justify-between">
+                      <span class="text-[#5C6F67]">Pemesan:</span>
+                      <strong class="text-slate-900">${user ? user.name : 'User'}</strong>
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <span class="text-[#5C6F67]">Slot & Plat:</span>
+                      <span class="font-mono font-bold">${slot ? slot.slot_code : '-'} • ${rsv ? rsv.vehicle_plate : '-'}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <span class="text-[#5C6F67]">Jumlah Tagihan:</span>
+                      <span class="font-mono font-extrabold text-sm text-[#0F382C]">Rp ${p.amount.toLocaleString('id-ID')}</span>
+                    </div>
+                  </div>
+
+                  <!-- Receipt thumbnail preview -->
+                  <div class="cursor-pointer group relative rounded-2xl overflow-hidden border border-[#D5D2C7] bg-slate-100 p-2 text-center" onclick="openPaymentPreviewModal(${p.id})">
+                    <img data-payment-proof="${p.id}" alt="Bukti pembayaran" src="assets/sample_receipt_blur.svg" class="max-h-32 mx-auto rounded object-contain group-hover:scale-105 transition-transform">
+                    <span class="block text-[10px] font-mono text-slate-500 mt-1">Klik untuk Memeriksa Struk Penuh &rarr;</span>
+                  </div>
+                </div>
+
+                <div class="pt-2 flex items-center gap-2">
+                  <button type="button" onclick="openPaymentPreviewModal(${p.id})" class="flex-1 py-2.5 rounded-xl bg-[#0F382C] hover:bg-[#164E3F] text-white font-bold text-xs shadow-sm">
+                    Periksa & Setujui
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+      loadProtectedPaymentProofs(container);
+    }
+
+    async function loadProtectedPaymentProofs(container) {
+      for (const image of container.querySelectorAll('[data-payment-proof]')) {
+        await loadProtectedPaymentProof(image, image.dataset.paymentProof);
+      }
+    }
+
+    async function loadProtectedPaymentProof(image, paymentId) {
+      const payment = store.getPaymentById(Number(paymentId));
+      const proofImage = payment?.proof_image || 'assets/sample_receipt_blur.svg';
+      image.src = proofImage.startsWith('/api/')
+        ? `${store.getBackendUrl()}${proofImage}`
+        : proofImage;
+    }
+    async function openPaymentPreviewModal(paymentId) {
+      const p = store.getPaymentById(paymentId);
+      if (!p) return;
+
+      activePaymentForAction = p;
+      const rsv = store.getReservationById(p.reservation_id);
+      const user = rsv ? store.getUserById(rsv.user_id) : null;
+      const slot = rsv ? store.getSlotById(rsv.parking_slot_id) : null;
+
+      document.getElementById('verif-payment-id').value = p.id;
+      document.getElementById('verif-res-code').textContent = rsv ? rsv.reservation_code : 'RSV-XXXX';
+      document.getElementById('verif-user-name').textContent = user ? user.name : 'Pengguna';
+      document.getElementById('verif-amount').textContent = `Rp ${p.amount.toLocaleString('id-ID')}`;
+      document.getElementById('verif-slot-plate').textContent = `${slot ? slot.slot_code : '-'} • ${rsv ? rsv.vehicle_plate : '-'}`;
+      document.getElementById('verif-time').textContent = new Date(p.created_at).toLocaleString('id-ID');
+      const proofImage = document.getElementById('verif-slip-img');
+      proofImage.removeAttribute('src');
+      if (p.proof_image) {
+        await loadProtectedPaymentProof(proofImage, p.id);
+      }
+
+      document.getElementById('modal-payment-preview').showModal();
+    }
+
+    async function approveCurrentPayment() {
+      if (!activePaymentForAction) return;
+      const paymentId = activePaymentForAction.id;
+      try {
+        await store.approvePayment(paymentId, currentAdmin.id);
+        // Close modal first before rendering
+        const modal = document.getElementById('modal-payment-preview');
+        if (modal && modal.open) modal.close();
+        activePaymentForAction = null; // Prevent double-trigger
+        if (window.buzzerAudio) window.buzzerAudio.beepSuccess();
+        showAdminToast(`Pembayaran #${paymentId} berhasil disetujui! E-Ticket telah aktif.`, true);
+        // Delay rendering slightly to let modal close animation finish
+        setTimeout(() => renderAllAdminData(), 100);
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    function openRejectModal() {
+      document.getElementById('modal-reject-reason').showModal();
+    }
+
+    async function confirmRejectPayment() {
+      if (!activePaymentForAction) return;
+      const paymentId = activePaymentForAction.id;
+      const reasonInput = document.querySelector('input[name="reject-reason"]:checked');
+      const reason = reasonInput ? reasonInput.value : 'Bukti transfer tidak valid';
+
+      try {
+        await store.rejectPayment(paymentId, reason, currentAdmin.id);
+        const modalReject = document.getElementById('modal-reject-reason');
+        const modalPreview = document.getElementById('modal-payment-preview');
+        if (modalReject && modalReject.open) modalReject.close();
+        if (modalPreview && modalPreview.open) modalPreview.close();
+        activePaymentForAction = null; // Prevent double-trigger
+        if (window.buzzerAudio) window.buzzerAudio.beepError();
+        showAdminToast(`Pembayaran #${paymentId} ditolak: ${reason}`, false);
+        setTimeout(() => renderAllAdminData(), 100);
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    // --- RENDER RESERVATIONS TABLE ---
+    function escapeAdminHtml(value) {
+      return String(value ?? '').replace(/[&<>"']/g, character => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      })[character]);
+    }
+
+    function renderReservationsTable() {
+      const tbody = document.getElementById('admin-reservations-tbody');
+      if (!tbody) return;
+
+      const search = (document.getElementById('filter-rsv-search')?.value || '').toLowerCase();
+      const statusFilter = document.getElementById('filter-rsv-status')?.value || 'all';
+
+      let list = store.getReservations();
+      if (statusFilter !== 'all') {
+        list = list.filter(r => r.status === statusFilter);
+      }
+      if (search) {
+        list = list.filter(r => 
+          r.reservation_code.toLowerCase().includes(search) || 
+          r.vehicle_plate.toLowerCase().includes(search)
+        );
+      }
+
+      if (list.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="8" class="py-6 text-center text-[#5C6F67]">Tidak ditemukan data reservasi yang sesuai.</td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = list.map(r => {
+        const reservationId = Number(r.id);
+        const user = store.getUserById(r.user_id);
+        const slot = store.getSlotById(r.parking_slot_id);
+        const hasActiveSession = (store.data.parking_sessions || []).some(session =>
+          Number(session.reservation_id) === Number(r.id) && session.status === 'active'
+        );
+        const cannotDelete = r.status === 'active' || hasActiveSession;
+
+        let statusClass = 'bg-slate-100 text-slate-700';
+        if (r.status === 'confirmed') statusClass = 'bg-emerald-100 text-emerald-900 border border-emerald-300';
+        else if (r.status === 'active') statusClass = 'bg-emerald-900 text-white';
+        else if (r.status === 'waiting_verification') statusClass = 'bg-blue-100 text-blue-900 border border-blue-300';
+        else if (r.status === 'pending_payment') statusClass = 'bg-amber-100 text-amber-900 border border-amber-300';
+        else if (r.status === 'cancelled' || r.status === 'rejected') statusClass = 'bg-rose-100 text-rose-900';
+
+        return `
+          <tr class="hover:bg-[#FAF8F5] transition-colors">
+            <td class="py-3 px-4 font-mono font-bold text-[#0F382C]">${escapeAdminHtml(r.reservation_code)}</td>
+            <td class="py-3 px-4 font-semibold">${escapeAdminHtml(user ? user.name : 'Unknown')}</td>
+            <td class="py-3 px-4 font-mono font-bold">${escapeAdminHtml(slot ? slot.slot_code : '-')}</td>
+            <td class="py-3 px-4 font-mono">${escapeAdminHtml(r.vehicle_plate)}</td>
+            <td class="py-3 px-4 font-mono text-[11px]">${escapeAdminHtml(String(r.start_time || '').replace('T', ' '))} s/d ${escapeAdminHtml(String(r.end_time || '').slice(11, 16))}</td>
+            <td class="py-3 px-4 font-mono font-bold">Rp ${Number(r.total_price || 0).toLocaleString('id-ID')}</td>
+            <td class="py-3 px-4">
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${statusClass}">
+                ${escapeAdminHtml(String(r.status || 'unknown').toUpperCase())}
+              </span>
+            </td>
+            <td class="py-3 px-4">
+              <div class="flex items-center gap-1.5">
+                ${['active', 'confirmed'].includes(r.status) ? `
+                  <button type="button" onclick="adminCheckout(${reservationId})" class="px-2 py-1 rounded bg-emerald-700 hover:bg-emerald-800 text-white text-[11px] font-semibold" title="Selesaikan Parkir">
+                    Checkout
+                  </button>
+                ` : ''}
+                ${!['completed', 'cancelled'].includes(r.status) ? `
+                  <button type="button" onclick="adminCancelReservation(${reservationId})" class="px-2 py-1 rounded border border-amber-300 text-amber-800 hover:bg-amber-50 text-[11px] font-semibold">
+                    Batal
+                  </button>
+                ` : ''}
+                <button type="button" onclick="adminDeleteReservation(${reservationId})" ${cannotDelete ? 'disabled title="Checkout sesi aktif terlebih dahulu"' : ''} class="px-2 py-1 rounded border border-rose-300 text-rose-700 hover:bg-rose-50 disabled:opacity-40 disabled:cursor-not-allowed text-[11px] font-semibold">
+                  Hapus
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderParkingSessionsTable() {
+      const tbody = document.getElementById('admin-parking-sessions-tbody');
+      if (!tbody) return;
+
+      const sessions = store.data.parking_sessions || [];
+      if (sessions.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="py-6 text-center text-[#5C6F67]">Belum ada sesi parkir.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = sessions.map(session => {
+        const sessionId = Number(session.id);
+        const reservation = store.getReservationById(session.reservation_id);
+        const slot = reservation ? store.getSlotById(reservation.parking_slot_id) : null;
+        const isActive = session.status === 'active' || reservation?.status === 'active';
+        const statusClass = isActive ? 'bg-emerald-100 text-emerald-900' : 'bg-slate-100 text-slate-700';
+        const formatDate = value => value ? String(value).replace('T', ' ') : '-';
+
+        return `
+          <tr class="hover:bg-[#FAF8F5] transition-colors">
+            <td class="py-3 px-4 font-mono font-bold text-[#0F382C]">${escapeAdminHtml(reservation?.reservation_code || `#${session.reservation_id}`)}</td>
+            <td class="py-3 px-4 font-mono">${escapeAdminHtml(slot?.slot_code || '-')} / ${escapeAdminHtml(reservation?.vehicle_plate || '-')}</td>
+            <td class="py-3 px-4 font-mono text-[11px]">${escapeAdminHtml(formatDate(session.check_in))}</td>
+            <td class="py-3 px-4 font-mono text-[11px]">${escapeAdminHtml(formatDate(session.check_out))}</td>
+            <td class="py-3 px-4"><span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${statusClass}">${escapeAdminHtml(String(session.status || 'unknown').toUpperCase())}</span></td>
+            <td class="py-3 px-4">
+              <div class="flex items-center gap-1.5">
+                ${isActive && reservation ? `<button type="button" onclick="adminCheckout(${Number(reservation.id)})" class="px-2 py-1 rounded bg-emerald-700 hover:bg-emerald-800 text-white text-[11px] font-semibold">Checkout</button>` : ''}
+                ${!isActive ? `<button type="button" onclick="adminDeleteParkingSession(${sessionId})" class="px-2 py-1 rounded border border-rose-300 text-rose-700 hover:bg-rose-50 text-[11px] font-semibold">Hapus Sesi</button>` : ''}
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function adminCheckout(resId) {
+      if (confirm('Selesaikan sesi parkir ini sekarang?')) {
+        try {
+          await store.checkoutSession(resId);
+          showAdminToast('Sesi parkir telah diselesaikan.', true);
+          renderAllAdminData();
+        } catch (error) {
+          showAdminToast(error.message, false);
+        }
+      }
+    }
+
+    async function adminDeleteReservation(resId) {
+      const reservation = store.getReservationById(resId);
+      if (!reservation) {
+        showAdminToast('Reservasi tidak ditemukan.', false);
+        return;
+      }
+
+      const confirmed = confirm(
+        `Hapus reservasi ${reservation.reservation_code}? Data pembayaran, verifikasi kedatangan, dan sesi terkait juga akan dihapus.`
+      );
+      if (!confirmed) return;
+
+      try {
+        store.deleteReservation(resId);
+        showAdminToast('Reservasi dan data terkait berhasil dihapus.', true);
+        renderAllAdminData();
+      } catch (error) {
+        showAdminToast(error.message, false);
+      }
+    }
+
+    async function adminDeleteParkingSession(sessionId) {
+      if (!confirm('Hapus riwayat sesi parkir ini? Reservasinya tidak akan dihapus.')) return;
+      try {
+        store.deleteParkingSession(sessionId);
+        showAdminToast('Sesi parkir berhasil dihapus.', true);
+        renderAllAdminData();
+      } catch (error) {
+        showAdminToast(error.message, false);
+      }
+    }
+
+    async function adminCancelReservation(resId) {
+      if (confirm('Batalkan reservasi ini sebagai Administrator?')) {
+        try {
+          await store.cancelReservation(resId, 'Dibatalkan oleh Administrator', true);
+          showAdminToast('Reservasi telah dibatalkan.', true);
+        } catch (error) {
+          showAdminToast(error.message, false);
+        }
+      }
+    }
+
+    // --- RENDER FINANCIAL REPORTS (CHART.JS & CSV) ---
+    function renderReportsView() {
+      const metrics = store.getRevenueMetrics('all');
+      const container = document.getElementById('revenue-metrics-cards');
+      if (!container) return;
+
+      container.innerHTML = `
+        <div class="p-5 rounded-2xl bg-white border border-[#E6E3D8] shadow-sm">
+          <span class="text-xs font-semibold text-[#5C6F67] block">Pendapatan Hari Ini</span>
+          <span class="text-2xl font-mono font-black text-emerald-800 mt-1 block">Rp ${metrics.today.toLocaleString('id-ID')}</span>
+        </div>
+        <div class="p-5 rounded-2xl bg-white border border-[#E6E3D8] shadow-sm">
+          <span class="text-xs font-semibold text-[#5C6F67] block">Bulan Ini (November 2026)</span>
+          <span class="text-2xl font-mono font-black text-[#0F382C] mt-1 block">Rp ${metrics.thisMonth.toLocaleString('id-ID')}</span>
+        </div>
+        <div class="p-5 rounded-2xl bg-white border border-[#E6E3D8] shadow-sm">
+          <span class="text-xs font-semibold text-[#5C6F67] block">Tahun Ini (2026)</span>
+          <span class="text-2xl font-mono font-black text-[#0F382C] mt-1 block">Rp ${metrics.thisYear.toLocaleString('id-ID')}</span>
+        </div>
+        <div class="p-5 rounded-2xl bg-white border border-emerald-300 bg-emerald-50/40 shadow-sm">
+          <span class="text-xs font-semibold text-emerald-900 block">Total Transaksi Disetujui</span>
+          <span class="text-2xl font-mono font-black text-emerald-900 mt-1 block">${metrics.approvedCount} Lunas</span>
+        </div>
+      `;
+    }
+
+    function initRevenueChart() {
+      const canvas = document.getElementById('revenueChartCanvas');
+      if (!canvas) return;
+
+      if (revenueChartInstance) {
+        revenueChartInstance.destroy();
+      }
+
+      // Aggregate revenue by date
+      const payments = store.getPayments().filter(p => p.status === 'approved' && p.verified_at);
+      const dateMap = {};
+      payments.forEach(p => {
+        const d = p.verified_at.slice(0, 10);
+        dateMap[d] = (dateMap[d] || 0) + Number(p.amount);
+      });
+
+      const labels = Object.keys(dateMap).sort();
+      const dataPoints = labels.map(l => dateMap[l]);
+
+      revenueChartInstance = new Chart(canvas, {
+        type: 'bar',
+        data: {
+          labels: labels.length ? labels : ['2026-11-08', '2026-11-09', '2026-11-10'],
+          datasets: [{
+            label: 'Pendapatan (IDR)',
+            data: dataPoints.length ? dataPoints : [20000, 20000, 40000],
+            backgroundColor: '#0F382C',
+            borderRadius: 8,
+            barThickness: 32
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                callback: function(val) { return 'Rp ' + val.toLocaleString('id-ID'); }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function exportRevenueCSV() {
+      const approved = store.getPayments().filter(p => p.status === 'approved');
+      if (approved.length === 0) {
+        alert('Belum ada transaksi pembayaran yang disetujui untuk diekspor.');
+        return;
+      }
+
+      let csv = 'ID Pembayaran,Kode Reservasi,Plat Nomor,Metode,Jumlah (IDR),Tanggal Verifikasi,Admin ID\n';
+      approved.forEach(p => {
+        const rsv = store.getReservationById(p.reservation_id);
+        csv += `${p.id},"${rsv ? rsv.reservation_code : '-'}","${rsv ? rsv.vehicle_plate : '-'}","${p.payment_method}",${p.amount},"${p.verified_at || '-'}",${p.verified_by || 1}\n`;
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.setAttribute('download', `laporan-pendapatan-smartparking-${new Date().toISOString().slice(0, 10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      showAdminToast('File CSV Laporan Keuangan berhasil diunduh.', true);
+    }
+
+    // --- RENDER LOGS TABLE ---
+    function renderLogsTable() {
+      const tbody = document.getElementById('admin-logs-tbody');
+      if (!tbody) return;
+
+      const logs = store.data.sensor_logs || [];
+      tbody.innerHTML = logs.slice(0, 15).map(l => {
+        const slot = store.getSlotById(l.parking_slot_id);
+        return `
+          <tr class="hover:bg-[#FAF8F5]">
+            <td class="py-2.5 px-4 font-mono text-slate-600">${l.recorded_at}</td>
+            <td class="py-2.5 px-4 font-mono font-bold">${slot ? slot.slot_code : 'Slot ' + l.parking_slot_id}</td>
+            <td class="py-2.5 px-4 font-mono font-semibold">${l.sensor_value} ADC</td>
+            <td class="py-2.5 px-4">
+              <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold ${l.detected_status === 'occupied' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">
+                ${l.detected_status.toUpperCase()}
+              </span>
+            </td>
+            <td class="py-2.5 px-4 font-mono text-[11px]">${l.buzzer_state}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // --- RENDER USERS SETTINGS ---
+    function renderUsersSettings() {
+      const tbody = document.getElementById('admin-users-tbody');
+      if (!tbody) return;
+
+      tbody.innerHTML = store.getUsers().map(u => `
+        <tr>
+          <td class="py-2 px-3 font-semibold">${u.name}</td>
+          <td class="py-2 px-3 font-mono text-slate-600">${u.email}</td>
+          <td class="py-2 px-3">
+            <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold ${u.role === 'admin' ? 'bg-emerald-900 text-white' : 'bg-slate-100 text-slate-700'}">
+              ${u.role.toUpperCase()}
+            </span>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function renderAllAdminData() {
+      renderKPIGrid();
+      renderAdminSlots();
+      renderPaymentsQueue();
+      renderReservationsTable();
+      renderParkingSessionsTable();
+      renderReportsView();
+      renderLogsTable();
+      renderUsersSettings();
+      renderArrivalIdentityReports();
+      renderPaymentVerificationAlerts();
+    }
+
+    function renderPaymentVerificationAlerts() {
+      const container = document.getElementById('admin-payment-arrival-alerts');
+      if (!container) return;
+
+      const alerts = store.data.payment_verification_alerts || [];
+      if (alerts.length === 0) {
+        container.className = 'hidden';
+        container.innerHTML = '';
+        return;
+      }
+
+      container.className = 'space-y-3';
+      container.innerHTML = alerts.map(alert => {
+        const paymentStatus = alert.payment_status === 'pending'
+          ? 'bukti pembayaran menunggu verifikasi'
+          : alert.payment_status === 'rejected'
+            ? 'pembayaran ditolak'
+            : 'belum ada pembayaran atau bukti transfer';
+
+        return `
+          <div class="p-5 rounded-2xl bg-rose-50 border-2 border-rose-300 text-rose-950 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <strong class="text-sm">⛔ Kendaraan dilarang parkir sebelum pembayaran disetujui</strong>
+              <p class="text-xs mt-1">
+                ${alert.vehicle_plate} terdeteksi di Slot ${alert.slot_code} untuk reservasi
+                ${alert.reservation_code}; ${paymentStatus}. Segera periksa pembayaran.
+              </p>
+            </div>
+            <button type="button" onclick="switchAdminTab('payments')" class="px-4 py-2 rounded-xl bg-[#0F382C] text-white text-xs font-bold">
+              Buka Verifikasi Pembayaran
+            </button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderArrivalIdentityReports() {
+      const container = document.getElementById('admin-arrival-identity-alerts');
+      if (!container) return;
+      const reports = (store.data.arrival_identity_reports || [])
+        .filter(report => report.status === 'pending');
+      if (!reports.length) {
+        container.className = 'hidden';
+        container.innerHTML = '';
+        return;
+      }
+
+      container.className = 'mb-6 space-y-3';
+      container.innerHTML = reports.map(report => `
+        <section role="alert" class="p-5 rounded-2xl bg-rose-50 border-2 border-rose-300 text-rose-950 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <strong class="text-sm">⚠️ Laporan kendaraan bukan milik pemesan — periksa slot</strong>
+            <p class="text-xs mt-1">
+              ${escapeAdminHtml(report.user_name || 'Pengguna')} melaporkan kendaraan di Slot
+              ${escapeAdminHtml(report.slot_code)} bukan miliknya. Sensor mendeteksi slot terisi;
+              periksa kendaraan fisik. Reservasi ${escapeAdminHtml(report.reservation_code)},
+              plat ${escapeAdminHtml(report.vehicle_plate)}.
+            </p>
+            <p class="text-[11px] mt-1 text-rose-800">Dilaporkan: ${escapeAdminHtml(report.reported_at || report.detected_at || '-')}</p>
+          </div>
+          <button type="button" data-report-id="${escapeAdminHtml(report.id)}" onclick="resolveArrivalIdentityReport(this.dataset.reportId)" class="px-4 py-2 rounded-xl bg-[#0F382C] text-white text-xs font-bold shrink-0">
+            Tandai sudah diperiksa
+          </button>
+        </section>
+      `).join('');
+    }
+
+    async function resolveArrivalIdentityReport(reportId) {
+      try {
+        await store.resolveArrivalIdentityReport(reportId, currentAdmin.id);
+        showAdminToast('Laporan telah ditandai sudah diperiksa.', true);
+        renderAllAdminData();
+      } catch (error) {
+        showAdminToast(error.message, false);
+      }
+    }
+
+    function toggleAdminDeviceOnline() {
+      showAdminToast('Status koneksi hanya dapat ditentukan dari heartbeat ESP32.', false);
+    }
+
+    function handleResetDatabase() {
+      showAdminToast('Reset database tidak tersedia dari dashboard. Gunakan backup dan perintah administrasi database.', false);
+    }
+
+    // =========================================================================
+    // ESP32 HARDWARE BRIDGE UI CONTROLLER
+    // =========================================================================
+
+    /** Perbarui status badge, polling info, dan IP display di panel settings */
+    function refreshESP32BridgeUI() {
+      const ip       = store.getESP32IP();
+      const isActive = !!store._hardwarePolling || !!store._backendPolling;
+
+      // Status badge
+      const badge = document.getElementById('esp32-bridge-status-badge');
+      if (badge) {
+        if (isActive && ip) {
+          badge.className = 'flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-900/60 border border-emerald-600 text-xs font-mono font-semibold text-emerald-300';
+          badge.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span><span id="esp32-bridge-status-text">Live Polling</span>';
+        } else if (ip && !isActive) {
+          badge.className = 'flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-900/50 border border-amber-600 text-xs font-mono font-semibold text-amber-300';
+          badge.innerHTML = '<span class="w-2 h-2 rounded-full bg-amber-400"></span><span id="esp32-bridge-status-text">IP Tersimpan</span>';
+        } else {
+          badge.className = 'flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-700/50 border border-slate-600 text-xs font-mono font-semibold text-slate-400';
+          badge.innerHTML = '<span class="w-2 h-2 rounded-full bg-slate-500"></span><span id="esp32-bridge-status-text">Tidak Terhubung</span>';
+        }
+      }
+
+      const pollingEl = document.getElementById('esp32-polling-status');
+      const savedIpEl = document.getElementById('esp32-saved-ip-display');
+      if (pollingEl) { pollingEl.textContent = isActive ? 'Aktif (3000ms)' : 'Tidak aktif'; pollingEl.className = isActive ? 'text-emerald-400' : 'text-slate-400'; }
+      if (savedIpEl) { savedIpEl.textContent = ip || '—'; savedIpEl.className = ip ? 'text-emerald-400' : 'text-slate-400'; }
+
+      // Pre-fill IP input jika sudah tersimpan
+      const ipInput = document.getElementById('esp32-ip-input');
+      if (ipInput && ip && !ipInput.value) ipInput.value = ip;
+    }
+
+    /** Update timestamp "Sinkronisasi Terakhir" */
+    function markESP32LastSync() {
+      const el = document.getElementById('esp32-last-sync');
+      if (el) { el.textContent = new Date().toLocaleTimeString('id-ID', { hour12: false }); el.className = 'text-emerald-400'; }
+      // Update status pill di header admin
+      updateAdminESP32Pill();
+    }
+
+    /** Update ESP32 connection pill di header nav */
+    function updateAdminESP32Pill() {
+      const pill = document.getElementById('admin-esp32-pill');
+      if (!pill) return;
+      const ip = store.getESP32IP();
+      const isActive = !!store._hardwarePolling || !!store._backendPolling;
+      if (ip && isActive) {
+        pill.className = 'hidden sm:flex items-center gap-1.5 text-xs font-mono font-medium text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200';
+        pill.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span><span>ESP32 Live: ' + ip + '</span>';
+      } else if (ip) {
+        pill.className = 'hidden sm:flex items-center gap-1.5 text-xs font-mono font-medium text-amber-800 bg-amber-50 px-3 py-1 rounded-full border border-amber-200';
+        pill.innerHTML = '<span class="w-2 h-2 rounded-full bg-amber-500"></span><span>ESP32: ' + ip + '</span>';
+      } else {
+        pill.className = 'hidden sm:flex items-center gap-1.5 text-xs font-mono font-medium text-slate-600 bg-slate-100 px-3 py-1 rounded-full border border-slate-200';
+        pill.innerHTML = '<span class="w-2 h-2 rounded-full bg-slate-400"></span><span>⚡ Mode Simulasi</span>';
+      }
+    }
+
+    async function esp32ConnectAndPoll() {
+      try {
+        const ip = document.getElementById('esp32-ip-input').value;
+        store.setESP32IP(ip);
+        const data = await store.syncFromESP32();
+        store.startHardwarePolling(3000);
+        const result = document.getElementById('esp32-test-result');
+        const wrapper = document.getElementById('esp32-test-result-wrapper');
+        if (result) result.textContent = JSON.stringify(data, null, 2);
+        if (wrapper) wrapper.classList.remove('hidden');
+        markESP32LastSync();
+        refreshESP32BridgeUI();
+        showAdminToast(`ESP32 terhubung di ${data.ip_address || ip}. Sensor diperbarui setiap 3 detik.`, true);
+      } catch (error) {
+        showAdminToast(`Gagal menghubungkan ESP32: ${error.message}`, false);
+      }
+    }
+
+    function esp32Disconnect() {
+      store.stopHardwarePolling();
+      if (store.data.iot_devices[0]) {
+        store.data.iot_devices[0].status = 'unknown';
+        store.emitChange();
+      }
+      refreshESP32BridgeUI();
+      showAdminToast('Polling ESP32 dihentikan. IP tetap tersimpan di browser ini.', true);
+    }
+
+    async function esp32TestConnection() {
+      try {
+        store.setESP32IP(document.getElementById('esp32-ip-input').value);
+        const data = await store.fetchESP32Status();
+        const result = document.getElementById('esp32-test-result');
+        const wrapper = document.getElementById('esp32-test-result-wrapper');
+        if (result) result.textContent = JSON.stringify(data, null, 2);
+        if (wrapper) wrapper.classList.remove('hidden');
+        showAdminToast(`Koneksi ESP32 berhasil: ${data.slots.length} slot terbaca.`, true);
+      } catch (error) {
+        showAdminToast(`ESP32 tidak dapat dijangkau: ${error.message}`, false);
+      }
+    }
+
+    async function esp32ApplyThreshold() {
+      try {
+        const value = document.getElementById('esp32-threshold-input').value;
+        await store.updateESP32Threshold(value);
+        showAdminToast(`Threshold sensor ESP32 disetel ke ${value} ADC.`, true);
+      } catch (error) {
+        showAdminToast(`Gagal menerapkan threshold: ${error.message}`, false);
+      }
+    }
+
+    async function esp32TestBuzzer(tone) {
+      try {
+        await store.triggerPhysicalBuzzer(tone);
+        showAdminToast('Perintah buzzer berhasil dikirim ke ESP32.', true);
+      } catch (error) {
+        showAdminToast(`Gagal mengirim perintah buzzer: ${error.message}`, false);
+      }
+    }
+
+    // Initial load
+    window.addEventListener('DOMContentLoaded', () => {
+      renderAllAdminData();
+
+      refreshESP32BridgeUI();
+      updateAdminESP32Pill();
+      if (store.getESP32IP()) store.startHardwarePolling(3000);
+    });
+
+    window.addEventListener('smart-parking-arrival-detected', (e) => {
+      renderAllAdminData();
+    });
+
+    window.addEventListener('smart-parking-unauthorized-arrival', (e) => {
+      const { slot, reservation, payment, reason } = e.detail;
+      if (reason === 'payment_not_approved') {
+        const paymentStatus = payment?.status === 'pending'
+          ? 'bukti pembayaran menunggu verifikasi'
+          : payment?.status === 'rejected'
+            ? 'pembayaran ditolak'
+            : 'belum ada pembayaran atau bukti transfer';
+        showAdminToast(
+          `⛔ Kendaraan ${reservation.vehicle_plate} (${reservation.reservation_code}) masuk Slot ${slot.slot_code}, tetapi ${paymentStatus}. Kendaraan dilarang parkir; segera verifikasi pembayaran.`,
+          false,
+          false
+        );
+      } else {
+        showAdminToast(`⚠️ PERINGATAN: Mobil asing / tanpa reservasi terdeteksi memasuki Slot ${slot.slot_code}!`, false);
+      }
+      renderAllAdminData();
+    });
+
+    window.addEventListener('smart-parking-data-updated', () => {
+      renderAllAdminData();
+      refreshESP32BridgeUI();
+    });
+
+    window.addEventListener('smart-parking-esp32-error', event => {
+      showAdminToast(`Koneksi ESP32 bermasalah: ${event.detail}`, false);
+      refreshESP32BridgeUI();
+    });
+
+    window.addEventListener('smart-parking-sync-error', event => {
+      updateAdminDatabaseStatus(false);
+      showAdminToast(`Gagal menyimpan ke server database: ${event.detail}`, false);
+    });
+
+    window.addEventListener('smart-parking-sync-status', event => {
+      updateAdminDatabaseStatus(Boolean(event.detail?.online));
+    });
+
+  </script>
+</body>
+</html>

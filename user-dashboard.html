@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Pengguna – Smart Parking System</title>
+  
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%230F382C'><rect width='24' height='24' rx='6' fill='%230F382C'/><text x='50%25' y='68%25' font-size='14' font-weight='bold' fill='white' text-anchor='middle'>P</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            forest: { DEFAULT: '#0F382C', hover: '#164E3F', dark: '#0B2820', light: '#E8F2EE' },
+            cream: { DEFAULT: '#FAF8F5', alt: '#F4F2EB' },
+            sand: { DEFAULT: '#E6E3D8', border: '#D5D2C7' }
+          },
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-[#FAF8F5] text-[#192A24] min-h-screen flex flex-col antialiased selection:bg-[#0F382C] selection:text-white">
+
+  <!-- ========================================================================= -->
+  <!-- TOP NAVIGATION BAR                                                        -->
+  <!-- ========================================================================= -->
+  <header class="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-[#E6E3D8] px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between gap-4">
+    <!-- Brand -->
+    <div class="flex items-center gap-3">
+      <a href="index.html" class="flex items-center gap-2.5 group">
+        <div class="w-10 h-10 rounded-xl bg-[#0F382C] text-white flex items-center justify-center font-bold text-base shadow-sm group-hover:scale-105 transition-transform">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+        </div>
+        <div>
+          <span class="font-serif tracking-wider font-bold text-base text-[#0F382C] block leading-none">SMART PARKING</span>
+          <span class="text-[10px] text-[#5C6F67] tracking-widest font-mono uppercase mt-0.5 block">DASHBOARD PENGGUNA</span>
+        </div>
+      </a>
+    </div>
+
+    <!-- Center/Right User Controls -->
+    <div class="flex items-center gap-3">
+      <!-- Heartbeat Pill -->
+      <div id="user-heartbeat-pill" class="hidden sm:inline-flex items-center gap-1.5 text-xs font-mono font-medium text-amber-800 bg-amber-50 px-3 py-1 rounded-full border border-amber-200">
+        <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+        <span id="user-heartbeat-text">Menghubungkan database</span>
+      </div>
+
+      <!-- ESP32 Hardware Status Pill -->
+      <div id="user-esp32-pill" class="hidden sm:inline-flex items-center gap-1.5 text-xs font-mono font-medium text-slate-600 bg-slate-100 px-3 py-1 rounded-full border border-slate-200">
+        <span class="w-2 h-2 rounded-full bg-slate-400"></span>
+        <span>Mode browser lokal</span>
+      </div>
+
+      <!-- New Reservation CTA Button -->
+      <button type="button" onclick="openNewBookingModal()" class="bg-[#0F382C] hover:bg-[#164E3F] text-white text-xs sm:text-sm font-bold px-4 py-2 rounded-xl transition-all shadow-sm flex items-center gap-1.5">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+        <span>Reservasi Baru</span>
+      </button>
+
+      <!-- User Profile Badge & Logout -->
+      <div class="flex items-center gap-3 pl-3 border-l border-[#E6E3D8]">
+        <div class="w-8 h-8 rounded-xl bg-[#0F382C] text-white flex items-center justify-center font-bold text-xs" id="user-avatar-initial">
+          U
+        </div>
+        <div class="hidden md:block text-left">
+          <div class="text-xs font-bold text-[#192A24]" id="user-display-name">Memuat...</div>
+          <div class="text-[10px] text-[#5C6F67] font-mono" id="user-display-email">...</div>
+        </div>
+        <button type="button" onclick="handleLogout()" title="Keluar dari Akun" class="p-2 text-rose-600 hover:bg-rose-50 rounded-xl border border-rose-200 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ========================================================================= -->
+  <!-- MAIN USER DASHBOARD VIEWPORT                                              -->
+  <!-- ========================================================================= -->
+  <main class="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto space-y-8">
+
+    <!-- Toast Notification Banner -->
+    <div id="user-toast" class="hidden p-4 rounded-2xl text-xs font-semibold flex items-center justify-between border"></div>
+
+    <!-- PERSISTENT ARRIVAL CONFIRMATION BANNER (PRD FR-ARR-003) -->
+    <div id="arrival-banner-container" class="hidden"></div>
+
+    <!-- SECTION 1: ACTIVE RESERVATION CARD (PRD FR-RES-001 - FR-RES-005) -->
+    <section>
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h2 class="text-lg font-bold text-[#192A24] tracking-tight">Reservasi Aktif Saya</h2>
+          <p class="text-xs text-[#5C6F67]">Status reservasi yang sedang berjalan atau menunggu kedatangan Anda.</p>
+        </div>
+      </div>
+
+      <div id="active-booking-container">
+        <!-- Rendered dynamically by script below -->
+      </div>
+    </section>
+
+    <!-- SECTION 2: REAL-TIME 4-SLOT AVAILABILITY WIDGET (PRD FR-PARK-003) -->
+    <section class="p-6 rounded-3xl bg-white border border-[#E6E3D8] shadow-sm">
+      <div class="flex items-center justify-between pb-4 border-b border-[#E6E3D8] mb-6">
+        <div>
+          <h3 class="font-bold text-sm text-[#192A24] flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span>Live Telemetri Ketersediaan Slot Parkir (A01 - A04)</span>
+          </h3>
+          <p class="text-xs text-[#5C6F67] mt-0.5">
+            Indikator slot: <strong class="text-rose-600">Merah = Kosong</strong>, <strong class="text-amber-600">Kuning = Direservasi</strong>, <strong class="text-emerald-600">Hijau = Terisi</strong>.
+          </p>
+        </div>
+        <button type="button" onclick="renderAllData()" class="text-xs font-semibold text-[#0F382C] hover:underline flex items-center gap-1">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          <span>Segarkan</span>
+        </button>
+      </div>
+
+      <div id="user-slots-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Rendered by JS -->
+      </div>
+    </section>
+
+    <!-- SECTION 3: RESERVATION HISTORY TABLE -->
+    <section class="p-6 rounded-3xl bg-white border border-[#E6E3D8] shadow-sm">
+      <div class="flex items-center justify-between pb-4 border-b border-[#E6E3D8] mb-4">
+        <div>
+          <h3 class="font-bold text-sm text-[#192A24]">Riwayat Reservasi Parkir</h3>
+          <p class="text-xs text-[#5C6F67]">Semua catatan pemesanan parkir yang pernah Anda lakukan.</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-xs text-left">
+          <thead class="bg-[#FAF8F5] text-[#5C6F67] font-mono uppercase text-[11px] border-b border-[#E6E3D8]">
+            <tr>
+              <th class="py-3 px-4">Kode Reservasi</th>
+              <th class="py-3 px-4">Slot</th>
+              <th class="py-3 px-4">Plat Kendaraan</th>
+              <th class="py-3 px-4">Jadwal Parkir</th>
+              <th class="py-3 px-4">Total Biaya</th>
+              <th class="py-3 px-4">Status Pembayaran</th>
+              <th class="py-3 px-4">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="history-table-body" class="divide-y divide-[#E6E3D8]">
+            <!-- Injected by JS -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL 1: FORM RESERVASI BARU (PRD FR-RES-001 - FR-RES-005)                -->
+  <!-- ========================================================================= -->
+  <dialog id="modal-new-reservation" class="w-full max-w-lg p-0 rounded-2xl overflow-hidden shadow-2xl border-none">
+    <div class="bg-[#0F382C] text-white p-6 flex items-center justify-between">
+      <div>
+        <h3 class="font-bold text-base">Buat Reservasi Slot Parkir</h3>
+        <p class="text-xs text-[#A2C7B8] mt-0.5">Pilih slot dan jam parkir dengan tarif flat Rp 5.000 / jam.</p>
+      </div>
+      <button type="button" onclick="document.getElementById('modal-new-reservation').close()" class="text-white/70 hover:text-white p-1">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <!-- Conflict Warning Error Banner -->
+    <div id="booking-error-banner" class="hidden m-6 mb-0 p-3.5 rounded-xl bg-rose-50 border border-rose-300 text-rose-800 text-xs flex items-center gap-2">
+      <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+      <span id="booking-error-msg"></span>
+    </div>
+
+    <form onsubmit="handleCreateReservationSubmit(event)" class="p-6 space-y-4 text-xs">
+      <!-- Slot Selection -->
+      <div>
+        <label class="block font-bold text-[#192A24] mb-1.5">Pilih Slot Parkir (A01 - A04)</label>
+        <div class="grid grid-cols-4 gap-2" id="booking-slot-options">
+          <!-- Radio cards injected by JS -->
+        </div>
+      </div>
+
+      <!-- Vehicle Plate -->
+      <div>
+        <label class="block font-bold text-[#192A24] mb-1.5">Nomor Plat Kendaraan (Mobil)</label>
+        <input type="text" id="booking-plate" required placeholder="Contoh: B 1234 XYZ" class="w-full px-3.5 py-2.5 rounded-xl border border-[#D5D2C7] bg-[#FAF8F5] text-sm uppercase font-mono font-bold focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0F382C]">
+      </div>
+
+      <!-- Time interval -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <label class="block font-bold text-[#192A24] mb-1.5">Jam Mulai Parkir</label>
+          <input type="datetime-local" id="booking-start-time" required onchange="calculateBookingPrice()" class="w-full px-3 py-2 rounded-xl border border-[#D5D2C7] bg-[#FAF8F5] text-xs font-mono focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0F382C]">
+        </div>
+        <div>
+          <label class="block font-bold text-[#192A24] mb-1.5">Jam Selesai Parkir</label>
+          <input type="datetime-local" id="booking-end-time" required onchange="calculateBookingPrice()" class="w-full px-3 py-2 rounded-xl border border-[#D5D2C7] bg-[#FAF8F5] text-xs font-mono focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0F382C]">
+        </div>
+      </div>
+
+      <!-- Auto Tariff Summary -->
+      <div class="p-4 rounded-xl bg-[#FAF8F5] border border-[#E6E3D8] space-y-2">
+        <div class="flex items-center justify-between">
+          <span class="text-[#5C6F67]">Estimasi Durasi:</span>
+          <span id="booking-duration-text" class="font-bold text-slate-800 font-mono">1 Jam</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-[#5C6F67]">Tarif:</span>
+          <span class="font-mono text-slate-600">Tarif lokal</span>
+        </div>
+        <div class="flex items-center justify-between pt-2 border-t border-[#E6E3D8]">
+          <span class="font-bold text-[#0F382C]">Total Tagihan:</span>
+          <span id="booking-total-price" class="font-mono text-xs font-bold text-[#0F382C]">Dihitung di browser</span>
+        </div>
+      </div>
+
+      <div class="pt-2 flex items-center justify-end gap-3">
+        <button type="button" onclick="document.getElementById('modal-new-reservation').close()" class="px-4 py-2.5 rounded-xl border border-[#D5D2C7] font-semibold text-[#5C6F67] hover:bg-[#FAF8F5]">
+          Batal
+        </button>
+        <button type="submit" class="px-5 py-2.5 rounded-xl bg-[#0F382C] hover:bg-[#164E3F] text-white font-bold transition-all shadow-md">
+          Konfirmasi & Dapatkan Kode Bayar
+        </button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL 2: UPLOAD BUKTI TRANSFER (PRD FR-PAY-001 - FR-PAY-003)              -->
+  <!-- ========================================================================= -->
+  <dialog id="modal-upload-receipt" class="w-[95vw] max-w-[95vw] p-0 rounded-2xl overflow-hidden shadow-2xl border-none">
+    <div class="bg-[#0F382C] text-white p-6 flex items-center justify-between">
+      <div>
+        <h3 class="font-bold text-base">Upload Bukti Transfer Bank</h3>
+        <p class="text-xs text-[#A2C7B8] mt-0.5" id="upload-res-code">RSV-XXXX</p>
+      </div>
+      <button type="button" onclick="document.getElementById('modal-upload-receipt').close()" class="text-white/70 hover:text-white p-1">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <form onsubmit="handleUploadProofSubmit(event)" class="p-6 space-y-3 text-xs">
+      <input type="hidden" id="upload-target-res-id">
+
+      <!-- Configured bank details -->
+      <div class="p-4 rounded-xl bg-[#FAF8F5] border border-[#E6E3D8] space-y-2">
+        <div class="flex items-center justify-between">
+          <span class="text-[#5C6F67]">Bank Tujuan:</span>
+          <span id="payment-bank-name" class="font-bold text-slate-800">Memuat informasi bank...</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-[#5C6F67]">Nomor Rekening:</span>
+          <span id="payment-bank-account" class="font-mono font-bold text-emerald-800 text-sm select-all">-</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-[#5C6F67]">Atas Nama:</span>
+          <span id="payment-bank-owner" class="font-semibold text-slate-800">-</span>
+        </div>
+        <div class="flex items-center justify-between pt-1 border-t border-[#E6E3D8]">
+          <span class="text-[#5C6F67]">Nominal Transfer:</span>
+          <span id="upload-target-amount" class="font-mono font-extrabold text-[#0F382C] text-sm">Rp 10.000</span>
+        </div>
+      </div>
+
+      <div>
+        <label class="block font-bold text-[#192A24] mb-1">Unggah Bukti Transfer (JPG, PNG, WEBP; maks. 5 MB)</label>
+        <input type="file" id="custom-slip-input" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" required onchange="handleCustomSlipUpload(event)" class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-[#0F382C] file:text-white hover:file:bg-[#164E3F]">
+      </div>
+
+      <!-- Image Preview -->
+      <div id="receipt-preview-container" class="p-2 rounded-xl bg-slate-50 border border-slate-200 text-center">
+        <img id="receipt-preview-img" alt="Pratinjau bukti transfer" class="hidden max-h-28 mx-auto rounded border">
+        <span id="receipt-preview-label" class="block text-[10px] text-slate-500 mt-1">Belum ada file dipilih</span>
+      </div>
+
+      <div class="pt-2 flex items-center justify-end gap-3">
+        <button type="button" onclick="document.getElementById('modal-upload-receipt').close()" class="px-4 py-2.5 rounded-xl border border-[#D5D2C7] font-semibold text-[#5C6F67]">
+          Batal
+        </button>
+        <button type="submit" class="px-5 py-2.5 rounded-xl bg-[#0F382C] hover:bg-[#164E3F] text-white font-bold transition-all shadow-md">
+          Kirim Bukti Pembayaran
+        </button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL 3: E-TICKET DIGITAL PASS (PRD FR-RES-005)                           -->
+  <!-- ========================================================================= -->
+  <dialog id="modal-eticket" class="w-full max-w-md p-0 rounded-3xl overflow-hidden shadow-2xl border-none">
+    <div class="bg-[#0F382C] text-white p-6 relative overflow-hidden text-center">
+      <div class="text-[10px] font-mono tracking-widest uppercase text-emerald-300">SMART PARKING PASS</div>
+      <h3 class="text-xl font-bold tracking-tight mt-1">E-TICKET PARKIR MOBIL</h3>
+      <span id="ticket-res-code" class="inline-block mt-2 font-mono text-xs px-3 py-1 rounded-full bg-white/10 border border-white/20">RSV-XXXX</span>
+    </div>
+
+    <div class="p-6 bg-white space-y-4 text-xs">
+      <div class="p-4 rounded-2xl bg-[#FAF8F5] border border-[#E6E3D8] space-y-3">
+        <div class="flex items-center justify-between pb-2 border-b border-[#E6E3D8]">
+          <span class="text-[#5C6F67]">Nomor Slot:</span>
+          <span id="ticket-slot" class="font-mono text-2xl font-black text-[#0F382C]">A01</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-[#5C6F67]">Plat Kendaraan:</span>
+          <span id="ticket-plate" class="font-mono font-bold text-slate-800 text-sm">B 1234 XYZ</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-[#5C6F67]">Nama Pengemudi:</span>
+          <span id="ticket-user" class="font-semibold text-slate-800">Budi Santoso</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-[#5C6F67]">Jadwal Mulai:</span>
+          <span id="ticket-start" class="font-mono text-slate-800">2026-11-10 14:00</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-[#5C6F67]">Jadwal Selesai:</span>
+          <span id="ticket-end" class="font-mono text-slate-800">2026-11-10 18:00</span>
+        </div>
+        <div class="flex items-center justify-between pt-2 border-t border-[#E6E3D8]">
+          <span class="text-[#5C6F67]">Status Pembayaran:</span>
+          <span class="font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">LUNAS / TERVERIFIKASI</span>
+        </div>
+      </div>
+
+      <!-- QR Code Mock Graphic -->
+      <div class="text-center py-2 space-y-2">
+        <div class="inline-block p-3 rounded-2xl bg-white border-2 border-slate-900 shadow-sm">
+          <svg class="w-32 h-32 mx-auto" viewBox="0 0 100 100" fill="currentColor">
+            <rect width="30" height="30" rx="3"/>
+            <rect x="70" width="30" height="30" rx="3"/>
+            <rect y="70" width="30" height="30" rx="3"/>
+            <rect x="10" y="10" width="10" height="10" fill="white"/>
+            <rect x="80" y="10" width="10" height="10" fill="white"/>
+            <rect x="10" y="80" width="10" height="10" fill="white"/>
+            <rect x="35" y="15" width="8" height="8"/>
+            <rect x="48" y="15" width="8" height="8"/>
+            <rect x="15" y="45" width="8" height="8"/>
+            <rect x="40" y="40" width="20" height="20"/>
+            <rect x="70" y="45" width="8" height="8"/>
+            <rect x="45" y="70" width="8" height="8"/>
+            <rect x="65" y="65" width="12" height="12"/>
+            <rect x="85" y="85" width="10" height="10"/>
+          </svg>
+        </div>
+        <span class="block text-[10px] font-mono text-[#5C6F67]">Scan QR pada Barrier Gate Masuk</span>
+      </div>
+
+      <div class="pt-2 flex items-center justify-end gap-3 print:hidden">
+        <button type="button" onclick="document.getElementById('modal-eticket').close()" class="px-4 py-2.5 rounded-xl border border-[#D5D2C7] font-semibold text-[#5C6F67]">
+          Tutup
+        </button>
+        <button type="button" onclick="window.print()" class="px-5 py-2.5 rounded-xl bg-[#0F382C] hover:bg-[#164E3F] text-white font-bold flex items-center gap-2 shadow-sm">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+          <span>Cetak Tiket</span>
+        </button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL 4: POP-UP KONFIRMASI KEDATANGAN KENDARAAN (PRD FR-ARR-003)           -->
+  <!-- ========================================================================= -->
+  <dialog id="modal-arrival-confirm" class="w-full max-w-md p-0 rounded-2xl overflow-hidden shadow-2xl border-none">
+    <div class="bg-[#0F382C] text-white p-6 relative overflow-hidden text-center">
+      <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-white/10 border border-white/20 mb-3 text-emerald-300">
+        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg>
+      </div>
+      <span class="text-[11px] font-mono tracking-widest text-[#A2C7B8] uppercase block">ESP32 Telemetry Trigger</span>
+      <h3 class="text-xl font-bold tracking-tight mt-1">KONFIRMASI KEDATANGAN</h3>
+      <p class="text-xs text-[#D1E0DA] mt-1">Sensor photodiode mendeteksi kendaraan pada slot Anda</p>
+    </div>
+
+    <div class="p-6 bg-white space-y-4 text-xs text-[#192A24]">
+      <div class="p-4 rounded-xl bg-[#FAF8F5] border border-[#E6E3D8] space-y-2.5">
+        <div class="flex items-center justify-between pb-2 border-b border-[#E6E3D8]">
+          <span class="text-[#5C6F67]">Lokasi Slot Fisik:</span>
+          <span id="arrival-slot-badge" class="font-mono font-extrabold text-lg px-2.5 py-0.5 rounded-lg bg-emerald-100 text-emerald-900 border border-emerald-300">
+            A01
+          </span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-[#5C6F67]">Kode Reservasi:</span>
+          <span id="arrival-res-code" class="font-mono font-bold text-[#0F382C]">RSV-20261110-0001</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-[#5C6F67]">Plat Nomor Terdaftar:</span>
+          <span id="arrival-plate" class="font-mono font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-800">B 1234 XYZ</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-[#5C6F67]">Waktu Deteksi:</span>
+          <span id="arrival-time" class="font-mono text-slate-600">Baru saja</span>
+        </div>
+      </div>
+
+      <p class="text-[#5C6F67] leading-relaxed text-[11px]">
+        Apakah benar kendaraan berplat di atas adalah mobil Anda yang baru saja memarkir di slot ini?
+      </p>
+
+      <div class="pt-2 flex flex-col gap-2">
+        <button type="button" onclick="confirmArrivalAction()" class="w-full py-3 rounded-xl bg-[#0F382C] hover:bg-[#164E3F] text-white font-bold text-xs tracking-wide transition-all shadow-md flex items-center justify-center gap-2">
+          <span>Ya, Konfirmasi Kedatangan Mobil Saya</span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+        </button>
+        <button type="button" onclick="dismissArrivalAction()" class="w-full py-2.5 rounded-xl border border-rose-300 text-rose-700 hover:bg-rose-50 font-semibold text-xs transition-colors">
+          Bukan Kendaraan Saya (Laporkan Anomali)
+        </button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- ========================================================================= -->
+  <!-- SCRIPTS & CONTROLLER                                                      -->
+  <!-- ========================================================================= -->
+  <script src="js/audio.js"></script>
+  <script src="js/data.js"></script>
+  <script>
+    const store = window.smartParkingStore;
+
+    // 1. Role Protection (FR-AUTH-003): Require role 'user'
+    const currentUser = store.requireAuth('user', 'login-user.html');
+    if (!currentUser) {
+      // redirected automatically
+    }
+
+    let activeArrivalDetail = null;
+    let selectedProofImage = null;
+    // Track which arrival modal was last shown (by verification_id) to prevent re-open on each sync
+    let _lastShownArrivalVerifId = null;
+
+    // Set user profile info
+    if (currentUser) {
+      document.getElementById('user-display-name').textContent = currentUser.name;
+      document.getElementById('user-display-email').textContent = currentUser.email;
+      document.getElementById('user-avatar-initial').textContent = currentUser.name.charAt(0);
+    }
+
+    function handleLogout() {
+      store.logout('user');
+      window.location.href = 'login-user.html';
+    }
+
+    function showUserToast(msg, isSuccess = true) {
+      const toast = document.getElementById('user-toast');
+      toast.className = `p-4 rounded-2xl text-xs font-semibold flex items-center justify-between border ${isSuccess ? 'bg-emerald-50 text-emerald-900 border-emerald-300' : 'bg-rose-50 text-rose-900 border-rose-300'}`;
+      toast.innerHTML = `
+        <span>${msg}</span>
+        <button type="button" onclick="this.parentElement.classList.add('hidden')" class="text-slate-500 hover:text-slate-800 font-bold">&times;</button>
+      `;
+      toast.classList.remove('hidden');
+      setTimeout(() => toast.classList.add('hidden'), 5000);
+    }
+
+    function updateDatabaseSyncPill(isOnline) {
+      const pill = document.getElementById('user-heartbeat-pill');
+      const text = document.getElementById('user-heartbeat-text');
+      if (!pill || !text) return;
+
+      pill.className = isOnline
+        ? 'hidden sm:inline-flex items-center gap-1.5 text-xs font-mono font-medium text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200'
+        : 'hidden sm:inline-flex items-center gap-1.5 text-xs font-mono font-medium text-rose-800 bg-rose-50 px-3 py-1 rounded-full border border-rose-200';
+      pill.querySelector('span').className = isOnline
+        ? 'w-2 h-2 rounded-full bg-emerald-500 animate-pulse'
+        : 'w-2 h-2 rounded-full bg-rose-500';
+      text.textContent = isOnline ? 'Database tersinkron' : 'Database offline - data lokal';
+    }
+
+    function renderBankInfo() {
+      const bankInfo = store.data.bank_info;
+      const account = bankInfo?.bank_accounts?.find(item => item.bank_name.toUpperCase() === 'BCA')
+        || bankInfo?.bank_accounts?.[0];
+      if (!account) {
+        document.getElementById('payment-bank-name').textContent = 'Simulasi Lokal';
+        document.getElementById('payment-bank-account').textContent = 'Tidak ada rekening sungguhan';
+        document.getElementById('payment-bank-owner').textContent = 'Demo browser';
+        return;
+      }
+      document.getElementById('payment-bank-name').textContent = account.bank_name;
+      document.getElementById('payment-bank-account').textContent = account.account_number;
+      document.getElementById('payment-bank-owner').textContent = account.account_name;
+    }
+
+    // --- RENDER ACTIVE RESERVATION CARD ---
+    function renderActiveReservation() {
+      const container = document.getElementById('active-booking-container');
+      if (!container) return;
+
+      const myReservations = store.getUserReservations(currentUser.id);
+      // Priority: active, confirmed, waiting_verification, pending_payment
+      const activeRes = myReservations.find(r => ['active', 'confirmed', 'waiting_verification', 'pending_payment'].includes(r.status));
+
+      if (!activeRes) {
+        container.innerHTML = `
+          <div class="p-8 rounded-3xl bg-white border border-[#E6E3D8] text-center space-y-4">
+            <div class="w-14 h-14 rounded-2xl bg-emerald-50 text-[#0F382C] border border-emerald-200 flex items-center justify-center mx-auto text-2xl">
+              🅿️
+            </div>
+            <div>
+              <h3 class="font-bold text-base text-[#192A24]">Tidak Ada Reservasi Aktif</h3>
+              <p class="text-xs text-[#5C6F67] max-w-md mx-auto mt-1">
+                Anda belum memiliki pemesanan slot parkir yang sedang berjalan. Buat reservasi baru sekarang untuk menjamin tempat parkir mobil Anda.
+              </p>
+            </div>
+            <button type="button" onclick="openNewBookingModal()" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#0F382C] hover:bg-[#164E3F] text-white font-bold text-xs shadow-md transition-all">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+              <span>Booking Slot Sekarang</span>
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      const slot = store.getSlotById(activeRes.parking_slot_id);
+      const payment = store.getPaymentByReservationId(activeRes.id);
+
+      // Status pill badge styling
+      let statusBadge, statusMsg;
+      if (activeRes.status === 'pending_payment') {
+        statusBadge = '<span class="px-3 py-1 rounded-full bg-amber-100 text-amber-900 font-mono font-bold text-xs border border-amber-300">MENUNGGU PEMBAYARAN</span>';
+        statusMsg = 'Silakan transfer ke rekening BCA kami dan unggah bukti transfer agar diverifikasi admin.';
+      } else if (activeRes.status === 'waiting_verification') {
+        statusBadge = '<span class="px-3 py-1 rounded-full bg-blue-100 text-blue-900 font-mono font-bold text-xs border border-blue-300">MENUNGGU VERIFIKASI ADMIN</span>';
+        statusMsg = 'Bukti pembayaran sudah terkirim. Admin sedang memverifikasi transfer Anda.';
+      } else if (activeRes.status === 'confirmed') {
+        statusBadge = '<span class="px-3 py-1 rounded-full bg-emerald-100 text-emerald-900 font-mono font-bold text-xs border border-emerald-300">LUNAS • SIAP PARKIR</span>';
+        statusMsg = 'Pembayaran terkonfirmasi. Silakan datang ke lokasi dan parkir di slot yang telah dipesan.';
+      } else {
+        statusBadge = '<span class="px-3 py-1 rounded-full bg-emerald-900 text-white font-mono font-bold text-xs">KENDARAAN SUDAH PARKIR (AKTIF)</span>';
+        statusMsg = 'Sesi parkir Anda sedang berjalan. Sensor mendeteksi kendaraan Anda di lokasi slot.';
+      }
+
+      container.innerHTML = `
+        <div class="p-6 sm:p-8 rounded-3xl bg-white border border-[#E6E3D8] shadow-sm space-y-6">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-[#E6E3D8] gap-3">
+            <div class="flex items-center gap-3">
+              <span class="font-mono text-3xl font-black px-3.5 py-1 rounded-2xl bg-emerald-50 text-[#0F382C] border border-emerald-300">
+                ${slot ? slot.slot_code : 'A01'}
+              </span>
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="font-mono font-bold text-sm text-[#192A24]">${activeRes.reservation_code}</span>
+                  <span class="font-mono text-xs px-2 py-0.5 rounded bg-slate-100 text-slate-800 font-bold">${activeRes.vehicle_plate}</span>
+                </div>
+                <span class="text-xs text-[#5C6F67]">Dibuat: ${new Date(activeRes.created_at).toLocaleString('id-ID')}</span>
+              </div>
+            </div>
+            <div>${statusBadge}</div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+            <div class="p-4 rounded-2xl bg-[#FAF8F5] border border-[#E6E3D8]">
+              <span class="text-[#5C6F67] block">Waktu Mulai:</span>
+              <span class="font-mono font-bold text-slate-900 text-sm mt-0.5 block">${activeRes.start_time.replace('T', ' ')}</span>
+            </div>
+            <div class="p-4 rounded-2xl bg-[#FAF8F5] border border-[#E6E3D8]">
+              <span class="text-[#5C6F67] block">Waktu Selesai:</span>
+              <span class="font-mono font-bold text-slate-900 text-sm mt-0.5 block">${activeRes.end_time.replace('T', ' ')}</span>
+            </div>
+            <div class="p-4 rounded-2xl bg-[#FAF8F5] border border-[#E6E3D8]">
+              <span class="text-[#5C6F67] block">Total Tagihan:</span>
+              <span class="font-mono font-extrabold text-[#0F382C] text-lg mt-0.5 block">Rp ${activeRes.total_price.toLocaleString('id-ID')}</span>
+            </div>
+          </div>
+
+          <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 flex items-center gap-2">
+            <svg class="w-4 h-4 text-[#0F382C] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <span>${statusMsg}</span>
+          </div>
+
+          ${slot && slot.is_occupied && !activeRes.arrival_confirmed_at && !store.isReservationApprovedForParking(activeRes) ? `
+            <div class="p-3.5 rounded-xl bg-rose-50 border border-rose-300 text-xs text-rose-800 font-semibold">
+              ⛔ DILARANG PARKIR: pembayaran belum disetujui admin. Tunggu verifikasi sebelum menggunakan slot.
+            </div>
+          ` : ''}
+
+          ${slot && slot.is_occupied && !activeRes.arrival_confirmed_at && store.isReservationApprovedForParking(activeRes) ? `
+            <!-- High-Priority In-Card Arrival Prompt (PRD FR-ARR-003) -->
+            <div class="p-4 rounded-2xl bg-amber-500/15 border-2 border-amber-500 text-amber-950 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
+              <div class="flex items-center gap-3">
+                <span class="text-3xl animate-bounce">🚗</span>
+                <div>
+                  <span class="font-extrabold text-sm text-[#0F382C] block">KENDARAAN TERDETEKSI DI SLOT ${slot.slot_code}!</span>
+                  <span class="text-xs text-amber-900">Sensor photodiode mendeteksi kendaraan (${activeRes.vehicle_plate}) telah memasuki slot. Konfirmasikan kedatangan Anda.</span>
+                </div>
+              </div>
+              <button type="button" onclick="openArrivalModalManual(${activeRes.id})" class="px-5 py-2.5 rounded-xl bg-[#0F382C] hover:bg-[#164E3F] text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-1.5 whitespace-nowrap">
+                <span>Konfirmasi Kedatangan</span>
+                <svg class="w-4 h-4 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              </button>
+            </div>
+          ` : ''}
+
+          <!-- Action Buttons -->
+          <div class="flex flex-wrap items-center gap-3 pt-2">
+            ${slot && slot.is_occupied && !activeRes.arrival_confirmed_at && store.isReservationApprovedForParking(activeRes) ? `
+              <button type="button" onclick="openArrivalModalManual(${activeRes.id})" class="px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                <span>Konfirmasi Kedatangan Mobil</span>
+              </button>
+            ` : ''}
+            ${activeRes.status === 'pending_payment' ? `
+              <button type="button" onclick="openUploadModal(${activeRes.id}, ${activeRes.total_price}, '${activeRes.reservation_code}')" class="px-5 py-2.5 rounded-xl bg-[#0F382C] hover:bg-[#164E3F] text-white font-bold text-xs flex items-center gap-1.5 shadow-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                <span>Upload Bukti Transfer BCA</span>
+              </button>
+            ` : ''}
+
+            ${['confirmed', 'active'].includes(activeRes.status) ? `
+              <button type="button" onclick="openETicketModal(${activeRes.id})" class="px-5 py-2.5 rounded-xl bg-[#0F382C] hover:bg-[#164E3F] text-white font-bold text-xs flex items-center gap-1.5 shadow-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/></svg>
+                <span>Lihat / Cetak E-Ticket Pass</span>
+              </button>
+            ` : ''}
+
+            ${['active', 'confirmed'].includes(activeRes.status) ? `
+              <button type="button" onclick="handleCheckout(${activeRes.id})" class="px-4 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                <span>Selesaikan Parkir (Check-out)</span>
+              </button>
+            ` : ''}
+
+            ${!['active', 'completed'].includes(activeRes.status) ? `
+              <button type="button" onclick="handleCancelReservation(${activeRes.id})" class="px-4 py-2.5 rounded-xl border border-rose-200 text-rose-700 hover:bg-rose-50 font-semibold text-xs">
+                Batalkan Reservasi
+              </button>
+            ` : ''}
+          </div>
+        </div>
+      `;
+    }
+
+    // --- RENDER 4-SLOT AVAILABILITY ---
+    function renderUserSlots() {
+      const slots = store.getSlots();
+      const container = document.getElementById('user-slots-grid');
+      if (!container) return;
+
+      container.innerHTML = slots.map(slot => {
+        const isOccupied = slot.is_occupied;
+        const isOffline = slot.physical_status === 'unknown';
+        const activeRes = store.getActiveReservationForSlot(slot.id);
+
+        let badgeBg, badgeText, statusLabel, dotClass, borderClass, cardBg;
+        if (isOffline) {
+          badgeBg = 'bg-slate-100 border border-slate-300';
+          badgeText = 'text-slate-700';
+          statusLabel = 'OFFLINE';
+          dotClass = 'bg-slate-400';
+          borderClass = 'border-slate-200';
+          cardBg = 'bg-white';
+        } else if (activeRes) {
+          // KETIKA SLOT SUDAH DI RESERVASI: Berubah jadi warna KUNING & tampilkan nomor plat mobil
+          badgeBg = 'bg-amber-100 border border-amber-300';
+          badgeText = 'text-amber-900';
+          statusLabel = 'SUDAH DI RESERVASI';
+          dotClass = 'bg-amber-500 animate-pulse';
+          borderClass = 'border-2 border-amber-400';
+          cardBg = 'bg-amber-50/60';
+        } else if (isOccupied) {
+          badgeBg = 'bg-emerald-50 border border-emerald-300';
+          badgeText = 'text-emerald-800';
+          statusLabel = 'TERISI';
+          dotClass = 'bg-emerald-500 animate-pulse';
+          borderClass = 'border-emerald-300';
+          cardBg = 'bg-white';
+        } else {
+          badgeBg = 'bg-rose-50 border border-rose-300';
+          badgeText = 'text-rose-800';
+          statusLabel = 'KOSONG (TERSEDIA)';
+          dotClass = 'bg-rose-500';
+          borderClass = 'border-rose-300';
+          cardBg = 'bg-white';
+        }
+
+        return `
+          <div class="p-4 rounded-2xl border-2 ${borderClass} ${cardBg} flex flex-col justify-between shadow-sm hover:shadow-md transition-shadow">
+            <div>
+              <div class="flex items-center justify-between pb-2 border-b border-[#E6E3D8]">
+                <div class="flex items-center gap-2">
+                  <span class="w-3 h-3 rounded-full ${dotClass}"></span>
+                  <span class="font-mono text-xl font-bold">${slot.slot_code}</span>
+                </div>
+                <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full ${badgeBg} ${badgeText}">
+                  ${statusLabel}
+                </span>
+              </div>
+
+              ${activeRes ? `
+                <!-- Plat Mobil Banner (Kuning) -->
+                <div class="mt-2.5 p-2 rounded-xl bg-amber-100/90 border border-amber-300 text-amber-950 flex items-center justify-between shadow-xs">
+                  <span class="text-[10px] font-bold text-amber-800 uppercase tracking-wide">Plat:</span>
+                  <span class="font-mono font-black text-xs text-amber-950">${activeRes.vehicle_plate}</span>
+                </div>
+              ` : ''}
+
+              <div class="py-2.5 text-xs text-[#5C6F67] space-y-1">
+                <div>Sensor: <strong class="font-mono text-slate-800">${slot.sensor_value} ADC</strong></div>
+                <div>Kondisi: <span>${slot.sensor_value < 2000 ? 'Ada Kendaraan' : 'Kosong'}</span></div>
+                ${activeRes ? `
+                  <div class="text-[11px] text-amber-900 font-semibold pt-1 border-t border-amber-200">
+                    Jadwal: ${activeRes.start_time.slice(11, 16)} - ${activeRes.end_time.slice(11, 16)}
+                  </div>
+                ` : ''}
+              </div>
+            </div>
+
+            <div class="pt-2">
+              ${activeRes ? `
+                <button type="button" disabled class="w-full py-1.5 rounded-lg bg-amber-200/90 border border-amber-300 text-amber-900 font-bold text-[11px] cursor-not-allowed text-center shadow-xs">
+                  Sudah Direservasi
+                </button>
+              ` : `
+                <button type="button" onclick="prefillBookingSlot(${slot.id})" class="w-full py-1.5 rounded-lg bg-[#FAF8F5] hover:bg-[#0F382C] text-[#0F382C] hover:text-white border border-[#D5D2C7] font-semibold text-[11px] transition-colors text-center shadow-xs">
+                  Pesan Slot Ini
+                </button>
+              `}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // --- RENDER HISTORY TABLE ---
+    function renderHistory() {
+      const tbody = document.getElementById('history-table-body');
+      if (!tbody) return;
+
+      const myReservations = store.getUserReservations(currentUser.id);
+      if (myReservations.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" class="py-6 text-center text-[#5C6F67]">Belum ada riwayat reservasi yang tercatat.</td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = myReservations.map(r => {
+        const slot = store.getSlotById(r.parking_slot_id);
+        const payment = store.getPaymentByReservationId(r.id);
+
+        let statusClass = 'bg-slate-100 text-slate-700';
+        if (r.status === 'confirmed') statusClass = 'bg-emerald-100 text-emerald-900 border border-emerald-300';
+        else if (r.status === 'active') statusClass = 'bg-emerald-900 text-white';
+        else if (r.status === 'waiting_verification') statusClass = 'bg-blue-100 text-blue-900 border border-blue-300';
+        else if (r.status === 'pending_payment') statusClass = 'bg-amber-100 text-amber-900 border border-amber-300';
+        else if (r.status === 'cancelled' || r.status === 'rejected') statusClass = 'bg-rose-100 text-rose-900';
+
+        return `
+          <tr class="hover:bg-[#FAF8F5] transition-colors">
+            <td class="py-3 px-4 font-mono font-bold text-[#0F382C]">${r.reservation_code}</td>
+            <td class="py-3 px-4 font-mono font-bold">${slot ? slot.slot_code : '-'}</td>
+            <td class="py-3 px-4 font-mono">${r.vehicle_plate}</td>
+            <td class="py-3 px-4 font-mono text-[11px]">${r.start_time.replace('T', ' ')} s/d ${r.end_time.slice(11, 16)}</td>
+            <td class="py-3 px-4 font-mono font-semibold">Rp ${r.total_price.toLocaleString('id-ID')}</td>
+            <td class="py-3 px-4">
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${statusClass}">
+                ${r.status.toUpperCase()}
+              </span>
+            </td>
+            <td class="py-3 px-4">
+              <div class="flex items-center gap-1.5">
+                ${['confirmed', 'active', 'completed'].includes(r.status) ? `
+                  <button type="button" onclick="openETicketModal(${r.id})" class="p-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-semibold" title="Lihat E-Ticket">
+                    🎫
+                  </button>
+                ` : ''}
+                ${r.status === 'pending_payment' ? `
+                  <button type="button" onclick="openUploadModal(${r.id}, ${r.total_price}, '${r.reservation_code}')" class="px-2 py-1 rounded bg-[#0F382C] text-white text-[11px] font-semibold" title="Upload Bukti">
+                    Bayar
+                  </button>
+                ` : ''}
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderAllData() {
+      renderActiveReservation();
+      renderUserSlots();
+      renderHistory();
+      checkAndShowArrivalPrompt();
+    }
+
+    // --- PERSISTENT ARRIVAL CONFIRMATION PROMPT (FR-ARR-003) ---
+    function checkAndShowArrivalPrompt() {
+      const pending = store.getPendingArrival();
+      const container = document.getElementById('arrival-banner-container');
+      if (!container) return;
+
+      if (pending && pending.reservation && pending.reservation.user_id === currentUser.id) {
+        container.className = 'mb-6 block';
+        container.innerHTML = `
+          <div class="p-5 rounded-3xl bg-amber-50 border-2 border-amber-400 text-amber-950 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-lg animate-pulse">
+            <div class="flex items-center gap-3.5">
+              <div class="w-12 h-12 rounded-2xl bg-amber-400/30 text-amber-950 flex items-center justify-center text-2xl flex-shrink-0">
+                🚗
+              </div>
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="px-2.5 py-0.5 rounded-full bg-amber-200 text-amber-950 font-mono font-black text-[11px] border border-amber-300">KENDARAAN TERDETEKSI DI SLOT</span>
+                  <span class="font-mono font-bold text-xs text-amber-900 bg-amber-100 px-2 py-0.5 rounded">${pending.slot.slot_code}</span>
+                </div>
+                <h4 class="font-extrabold text-sm text-[#0F382C] mt-1">Konfirmasi Kedatangan Mobil (${pending.reservation.vehicle_plate})</h4>
+                <p class="text-xs text-amber-900 mt-0.5">Sensor mendeteksi kendaraan Anda telah memasuki slot parkir. Silakan konfirmasi kedatangan untuk memulai sesi parkir resmi.</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2.5 flex-shrink-0">
+              <button type="button" onclick="openArrivalModalManual(${pending.reservation.id})" class="px-5 py-2.5 rounded-xl bg-[#0F382C] hover:bg-[#164E3F] text-white font-bold text-xs shadow-md flex items-center gap-2">
+                <svg class="w-4 h-4 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                <span>Konfirmasi Sekarang</span>
+              </button>
+            </div>
+          </div>
+        `;
+
+        // Auto-open modal if not dismissed for this specific arrival verification_id
+        const modal = document.getElementById('modal-arrival-confirm');
+        const thisVerifId = pending.verification_id;
+        const alreadyDismissed = window._arrivalModalDismissed && _lastShownArrivalVerifId === thisVerifId;
+        if (modal && !modal.open && !alreadyDismissed) {
+          activeArrivalDetail = pending;
+          _lastShownArrivalVerifId = thisVerifId;
+          document.getElementById('arrival-slot-badge').textContent = pending.slot.slot_code;
+          document.getElementById('arrival-res-code').textContent = pending.reservation.reservation_code;
+          document.getElementById('arrival-plate').textContent = pending.reservation.vehicle_plate;
+          document.getElementById('arrival-time').textContent = new Date().toLocaleTimeString('id-ID') + ' WIB';
+          modal.showModal();
+        }
+      } else {
+        container.className = 'hidden';
+        container.innerHTML = '';
+        const reported = activeArrivalDetail && (store.data.arrival_identity_reports || [])
+          .some(report => Number(report.reservation_id) === Number(activeArrivalDetail.reservation?.id));
+        if (reported) {
+          const modal = document.getElementById('modal-arrival-confirm');
+          if (modal && modal.open) modal.close();
+          activeArrivalDetail = null;
+          window._arrivalModalDismissed = true;
+        }
+      }
+    }
+
+    function openArrivalModalManual(resId) {
+      const rsv = store.getReservationById(resId);
+      if (!rsv) return;
+      const slot = store.getSlotById(rsv.parking_slot_id);
+      const pending = store.getPendingArrival(rsv.parking_slot_id);
+      if (!pending || Number(pending.reservation?.id) !== Number(rsv.id)) return;
+      activeArrivalDetail = {
+        verification_id: pending.verification_id,
+        reservation: rsv,
+        slot: slot,
+        user: store.getUserById(rsv.user_id),
+        detectedAt: new Date().toISOString()
+      };
+      document.getElementById('arrival-slot-badge').textContent = slot ? slot.slot_code : 'A01';
+      document.getElementById('arrival-res-code').textContent = rsv.reservation_code;
+      document.getElementById('arrival-plate').textContent = rsv.vehicle_plate;
+      document.getElementById('arrival-time').textContent = new Date().toLocaleTimeString('id-ID') + ' WIB';
+      window._arrivalModalDismissed = false;
+      const modal = document.getElementById('modal-arrival-confirm');
+      if (modal) modal.showModal();
+    }
+
+    // --- NEW BOOKING MODAL ACTIONS ---
+    function openNewBookingModal(preselectedSlotId = null) {
+      const modal = document.getElementById('modal-new-reservation');
+      const errorBanner = document.getElementById('booking-error-banner');
+      errorBanner.classList.add('hidden');
+
+      // Set default start time to today next hour
+      const now = new Date();
+      now.setMinutes(0, 0, 0);
+      now.setHours(now.getHours() + 1);
+      
+      const later = new Date(now);
+      later.setHours(later.getHours() + 2); // 2 hours default
+
+      // format YYYY-MM-DDTHH:mm
+      const formatDT = (d) => {
+        const pad = (n) => String(n).padStart(2, '0');
+        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+      };
+
+      document.getElementById('booking-start-time').value = formatDT(now);
+      document.getElementById('booking-end-time').value = formatDT(later);
+
+      // Render slots radio buttons
+      const slots = store.getSlots();
+      const container = document.getElementById('booking-slot-options');
+      container.innerHTML = slots.map(s => {
+        const activeRes = store.getActiveReservationForSlot(s.id);
+        const checked = preselectedSlotId ? s.id === Number(preselectedSlotId) : (s.id === 1 && !activeRes);
+        
+        let subText = s.is_occupied ? 'Fisik Terisi' : 'Fisik Kosong';
+        let customBorder = 'border-[#D5D2C7]';
+        
+        if (activeRes) {
+          subText = `🟡 Direservasi (${activeRes.vehicle_plate})`;
+          customBorder = 'border-amber-400 bg-amber-50/70 text-amber-900';
+        }
+
+        return `
+          <label class="cursor-pointer">
+            <input type="radio" name="booking-slot-id" value="${s.id}" ${checked ? 'checked' : ''} class="peer sr-only">
+            <div class="p-3 rounded-xl border ${customBorder} peer-checked:border-[#0F382C] peer-checked:bg-emerald-50 text-center transition-all">
+              <span class="font-mono text-lg font-black block">${s.slot_code}</span>
+              <span class="text-[9px] uppercase font-mono block ${activeRes ? 'text-amber-900 font-bold' : 'text-slate-500'}">${subText}</span>
+            </div>
+          </label>
+        `;
+      }).join('');
+
+      calculateBookingPrice();
+      modal.showModal();
+    }
+
+    function prefillBookingSlot(slotId) {
+      openNewBookingModal(slotId);
+    }
+
+    function calculateBookingPrice() {
+      const startVal = document.getElementById('booking-start-time').value;
+      const endVal = document.getElementById('booking-end-time').value;
+      const durEl = document.getElementById('booking-duration-text');
+      const priceEl = document.getElementById('booking-total-price');
+
+      if (!startVal || !endVal) return;
+      const start = new Date(startVal);
+      const end = new Date(endVal);
+
+      const diffMs = end - start;
+      if (diffMs <= 0) {
+        durEl.textContent = 'Jadwal Salah';
+        priceEl.textContent = 'Periksa waktu reservasi';
+        return;
+      }
+
+      const diffHours = Math.max(1, Math.ceil(diffMs / (1000 * 60 * 60)));
+      durEl.textContent = `${diffHours} Jam`;
+      const hours = Math.max(1, Math.ceil(diffMs / (1000 * 60 * 60)));
+      const tariff = Number(store.data.settings.tariff_per_hour) || 5000;
+      priceEl.textContent = `Rp ${(hours * tariff).toLocaleString('id-ID')}`;
+    }
+
+    async function handleCreateReservationSubmit(e) {
+      e.preventDefault();
+      const slotInput = document.querySelector('input[name="booking-slot-id"]:checked');
+      if (!slotInput) return;
+
+      const slotId = slotInput.value;
+      const plate = document.getElementById('booking-plate').value;
+      const startTime = document.getElementById('booking-start-time').value;
+      const endTime = document.getElementById('booking-end-time').value;
+
+      try {
+        const rsv = await store.createReservation({
+          userId: currentUser.id,
+          slotId: slotId,
+          vehiclePlate: plate,
+          startTime: startTime,
+          endTime: endTime
+        });
+
+        document.getElementById('modal-new-reservation').close();
+        if (window.buzzerAudio) window.buzzerAudio.beepSuccess();
+        showUserToast(`Reservasi ${rsv.reservation_code} berhasil dibuat! Silakan upload bukti pembayaran.`, true);
+        renderAllData();
+
+        // Prompt upload modal immediately
+        openUploadModal(rsv.id, rsv.total_price, rsv.reservation_code);
+      } catch (err) {
+        const errorBanner = document.getElementById('booking-error-banner');
+        const errorMsg = document.getElementById('booking-error-msg');
+        errorBanner.classList.remove('hidden');
+        errorMsg.textContent = err.message;
+        if (window.buzzerAudio) window.buzzerAudio.beepError();
+      }
+    }
+
+    // --- UPLOAD RECEIPT MODAL ---
+    function openUploadModal(resId, amount, resCode) {
+      document.getElementById('upload-target-res-id').value = resId;
+      document.getElementById('upload-res-code').textContent = resCode;
+      document.getElementById('upload-target-amount').textContent = `Rp ${Number(amount).toLocaleString('id-ID')}`;
+      selectedProofImage = null;
+      const fileInput = document.getElementById('custom-slip-input');
+      fileInput.value = '';
+      document.getElementById('receipt-preview-img').classList.add('hidden');
+      document.getElementById('receipt-preview-label').textContent = 'Belum ada file dipilih';
+      document.getElementById('modal-upload-receipt').showModal();
+    }
+
+    function handleCustomSlipUpload(e) {
+      const file = e.target.files[0];
+      if (file) {
+        selectedProofImage = file;
+        const preview = document.getElementById('receipt-preview-img');
+        preview.src = URL.createObjectURL(file);
+        preview.classList.remove('hidden');
+        document.getElementById('receipt-preview-label').textContent = file.name;
+      }
+    }
+
+    async function handleUploadProofSubmit(e) {
+      e.preventDefault();
+      const resId = document.getElementById('upload-target-res-id').value;
+      try {
+        if (!selectedProofImage) throw new Error('Pilih bukti transfer sebelum mengirim.');
+        await store.uploadPaymentProof(resId, selectedProofImage, 'Transfer Bank');
+        document.getElementById('modal-upload-receipt').close();
+        if (window.buzzerAudio) window.buzzerAudio.beepSuccess();
+        showUserToast('Bukti transfer berhasil diunggah! Status berubah menjadi Menunggu Verifikasi.', true);
+        renderAllData();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    // --- E-TICKET PASS MODAL ---
+    function openETicketModal(resId) {
+      const rsv = store.getReservationById(resId);
+      if (!rsv) return;
+
+      const slot = store.getSlotById(rsv.parking_slot_id);
+      document.getElementById('ticket-res-code').textContent = rsv.reservation_code;
+      document.getElementById('ticket-slot').textContent = slot ? slot.slot_code : 'A01';
+      document.getElementById('ticket-plate').textContent = rsv.vehicle_plate;
+      document.getElementById('ticket-user').textContent = currentUser.name;
+      document.getElementById('ticket-start').textContent = rsv.start_time.replace('T', ' ');
+      document.getElementById('ticket-end').textContent = rsv.end_time.replace('T', ' ');
+
+      document.getElementById('modal-eticket').showModal();
+    }
+
+    async function handleCheckout(resId) {
+      if (confirm('Apakah Anda yakin ingin menyelesaikan parkir dan keluar dari slot?')) {
+        try {
+          await store.checkoutSession(resId);
+          showUserToast('Sesi parkir telah diselesaikan. Terima kasih!', true);
+          renderAllData();
+        } catch (e) {
+          alert(e.message);
+        }
+      }
+    }
+
+    async function handleCancelReservation(resId) {
+      if (confirm('Batalkan reservasi ini?')) {
+        try {
+          await store.cancelReservation(resId);
+          showUserToast('Reservasi berhasil dibatalkan.', false);
+          renderAllData();
+        } catch (e) {
+          alert(e.message);
+        }
+      }
+    }
+
+    // --- FR-ARR-003 ARRIVAL CONFIRMATION LOGIC ---
+    window.addEventListener('smart-parking-arrival-detected', (e) => {
+      const detail = e.detail;
+      // Jika kedatangan pada slot milik pengguna yang sedang login
+      if (detail.reservation.user_id === currentUser.id) {
+        activeArrivalDetail = detail;
+        document.getElementById('arrival-slot-badge').textContent = detail.slot.slot_code;
+        document.getElementById('arrival-res-code').textContent = detail.reservation.reservation_code;
+        document.getElementById('arrival-plate').textContent = detail.reservation.vehicle_plate;
+        document.getElementById('arrival-time').textContent = new Date().toLocaleTimeString('id-ID') + ' WIB';
+
+        const modal = document.getElementById('modal-arrival-confirm');
+        modal.showModal();
+
+        if (window.buzzerAudio) window.buzzerAudio.beepDetection();
+      } else {
+        // Jika mobil yang masuk adalah reservasi akun lain
+        showUserToast(`🚗 Kendaraan terdeteksi di Slot ${detail.slot.slot_code} (Plat: ${detail.reservation.vehicle_plate}, Milik: ${detail.user ? detail.user.name : 'Pengguna lain'}). Konfirmasi kedatangan hanya untuk pemilik tiket.`, false);
+      }
+    });
+
+    window.addEventListener('smart-parking-unauthorized-arrival', (e) => {
+      if (e.detail.reason === 'payment_not_approved') {
+        const paymentStatus = e.detail.payment?.status === 'pending'
+          ? 'Bukti pembayaran Anda masih menunggu verifikasi admin.'
+          : e.detail.payment?.status === 'rejected'
+            ? 'Pembayaran Anda ditolak admin.'
+            : 'Pembayaran atau bukti transfer belum tersedia.';
+        showUserToast(
+          `⛔ DILARANG PARKIR di Slot ${e.detail.slot.slot_code}. ${paymentStatus} Silakan tunggu persetujuan admin.`,
+          false
+        );
+      } else {
+        showUserToast(`⚠️ Mobil tanpa tiket terdeteksi memasuki Slot ${e.detail.slot.slot_code}! Alarm buzzer 2400Hz berbunyi.`, false);
+      }
+    });
+
+    async function confirmArrivalAction() {
+      if (!activeArrivalDetail) return;
+      try {
+        await store.confirmArrival(activeArrivalDetail.reservation.id, currentUser.id);
+        const modal = document.getElementById('modal-arrival-confirm');
+        if (modal && modal.open) modal.close();
+        window._arrivalModalDismissed = false;
+        _lastShownArrivalVerifId = null;
+        showUserToast(`Kedatangan terkonfirmasi! Sesi parkir di slot ${activeArrivalDetail.slot.slot_code} telah dimulai.`, true);
+        renderAllData();
+      } catch (e) {
+        alert(e.message);
+      }
+    }
+
+    async function dismissArrivalAction() {
+      if (!activeArrivalDetail) return;
+      try {
+        await store.reportArrivalNotMine(activeArrivalDetail.reservation.id, currentUser.id);
+      } catch (error) {
+        showUserToast(error.message, false);
+        return;
+      }
+
+      const modal = document.getElementById('modal-arrival-confirm');
+      if (modal && modal.open) modal.close();
+      window._arrivalModalDismissed = true;
+      if (activeArrivalDetail) _lastShownArrivalVerifId = activeArrivalDetail.verification_id;
+      if (window.buzzerAudio) window.buzzerAudio.beepError();
+      activeArrivalDetail = null;
+      showUserToast('Laporan terkirim. Admin akan memeriksa kendaraan di slot parkir.', true);
+      renderAllData();
+    }
+
+    // --- HARDWARE SIMULATOR INJECTION ---
+    // Update ESP32 hardware connection pill
+    function updateUserESP32Pill() {
+      const pill = document.getElementById('user-esp32-pill');
+      if (!pill) return;
+      const ip = store.getESP32IP();
+      const isActive = !!store._hardwarePolling || !!store._backendPolling;
+      if (ip && isActive) {
+        pill.className = 'hidden sm:inline-flex items-center gap-1.5 text-xs font-mono font-medium text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200';
+        pill.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span><span>ESP32 Live: ' + ip + '</span>';
+      } else if (ip) {
+        pill.className = 'hidden sm:inline-flex items-center gap-1.5 text-xs font-mono font-medium text-amber-800 bg-amber-50 px-3 py-1 rounded-full border border-amber-200';
+        pill.innerHTML = '<span class="w-2 h-2 rounded-full bg-amber-500"></span><span>ESP32: ' + ip + '</span>';
+      } else {
+        pill.className = 'hidden sm:inline-flex items-center gap-1.5 text-xs font-mono font-medium text-slate-600 bg-slate-100 px-3 py-1 rounded-full border border-slate-200';
+        pill.innerHTML = '<span class="w-2 h-2 rounded-full bg-slate-400"></span><span>⚡ Mode Simulasi</span>';
+      }
+    }
+
+    // Check query params if bookSlot is passed from index.html
+    window.addEventListener('DOMContentLoaded', () => {
+      renderAllData();
+
+      updateUserESP32Pill();
+      if (store.getESP32IP()) store.startHardwarePolling(3000);
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const bookSlot = urlParams.get('bookSlot');
+      if (bookSlot) {
+        openNewBookingModal(bookSlot);
+      }
+    });
+
+    window.addEventListener('smart-parking-data-updated', () => {
+      renderBankInfo();
+      renderAllData();
+      updateUserESP32Pill();
+    });
+
+    window.addEventListener('smart-parking-esp32-error', event => {
+      showUserToast(`Koneksi ESP32 bermasalah: ${event.detail}`, false);
+      updateUserESP32Pill();
+    });
+
+    window.addEventListener('smart-parking-sync-error', event => {
+      updateDatabaseSyncPill(false);
+      showUserToast(`Gagal menyimpan ke server database: ${event.detail}`, false);
+    });
+
+    window.addEventListener('smart-parking-sync-status', event => {
+      updateDatabaseSyncPill(Boolean(event.detail?.online));
+    });
+
+    store.refreshWithFeedback();
+
+  </script>
+</body>
+</html>
